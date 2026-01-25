@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.finamobileapp.components.BalanceBox
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,28 +30,34 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Dashboard() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFA69D9D)),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(modifier = Modifier.height(40.dp))
 
-        Text("Income", fontSize = 32.sp, fontWeight = FontWeight.Normal)
+    Scaffold {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it)
+                .background(Color(0xFFA69D9D)),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(40.dp))
 
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Text("Expenses", fontSize = 32.sp, fontWeight = FontWeight.Normal)
+            Text("Income", fontSize = 32.sp, fontWeight = FontWeight.Normal)
 
 
-        Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(20.dp))
 
-        Text("Sumarize", fontSize = 28.sp)
+            Text("Expenses", fontSize = 32.sp, fontWeight = FontWeight.Normal)
 
 
-        Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.weight(1f))
+
+            Text("Váš zustatek", fontSize = 28.sp)
+            BalanceBox(-5000)
+
+
+            Spacer(modifier = Modifier.height(20.dp))
+        }
+
     }
 }
 
