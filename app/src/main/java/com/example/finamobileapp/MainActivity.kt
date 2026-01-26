@@ -15,6 +15,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.finamobileapp.components.BalanceBox
+import com.example.finamobileapp.components.CategoryBox
+import com.example.finamobileapp.models.Category
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,8 +42,10 @@ fun Dashboard() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(40.dp))
+            Text("FinApp")
 
             Text("Income", fontSize = 32.sp, fontWeight = FontWeight.Normal)
+            CategoryBox(Category(name="Salary",amount=1000))
 
 
             Spacer(modifier = Modifier.height(20.dp))
