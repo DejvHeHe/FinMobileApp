@@ -44,13 +44,16 @@ fun Dashboard() {
             Spacer(modifier = Modifier.height(40.dp))
             Text("FinApp")
 
-            Text("Income", fontSize = 32.sp, fontWeight = FontWeight.Normal)
-            CategoryBox(Category(name="Salary",amount=1000))
+            Row {
+
+                Text("Income", fontSize = 32.sp, fontWeight = FontWeight.Normal)
+                CategoryBox(Category(name="Salary",amount=1000))
 
 
-            Spacer(modifier = Modifier.height(20.dp))
+                Text("Expenses", fontSize = 32.sp, fontWeight = FontWeight.Normal)
 
-            Text("Expenses", fontSize = 32.sp, fontWeight = FontWeight.Normal)
+            }
+
 
 
             Spacer(modifier = Modifier.weight(1f))
