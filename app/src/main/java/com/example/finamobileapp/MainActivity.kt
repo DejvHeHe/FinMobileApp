@@ -16,7 +16,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.finamobileapp.components.BalanceBox
 import com.example.finamobileapp.components.CategoryBox
-import com.example.finamobileapp.models.Category
+import com.example.finamobileapp.components.TypeBox
+import com.example.finamobileapp.models.TransactionCategory
+import com.example.finamobileapp.models.TypeBoxData
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,15 +44,21 @@ fun Dashboard() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(40.dp))
-            Text("FinApp")
+            Text("FinApp", fontSize = 40.sp)
 
             Row {
+                val incomeData = TypeBoxData(
+                    title = "Expense",
+                    items = mapOf(
+                        TransactionCategory.FUN to 45000,
+                        TransactionCategory.FOOD to 2000,
 
-                Text("Income", fontSize = 32.sp, fontWeight = FontWeight.Normal)
-                CategoryBox(Category(name="Salary",amount=1000))
+                    ),
+                    totalSum = 47150
+                )
+                TypeBox(incomeData)
 
 
-                Text("Expenses", fontSize = 32.sp, fontWeight = FontWeight.Normal)
 
             }
 

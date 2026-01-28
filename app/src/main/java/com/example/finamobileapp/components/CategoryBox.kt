@@ -5,15 +5,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.example.finamobileapp.models.Category
+import com.example.finamobileapp.models.TransactionCategory
 
 @Composable
-fun CategoryBox(item:Category)
+fun CategoryBox(name:TransactionCategory,amount:Int)
 {
 
     Row(modifier = Modifier
         .fillMaxWidth(0.90f)) {
-        Text("${item.name}:")
-        Text("${item.amount}")
+        Text("$name:")
+        Text("$amount")
     }
 }
