@@ -44,19 +44,28 @@ fun Dashboard() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(40.dp))
-            Text("FinApp", fontSize = 40.sp)
+            Text("FinApp", fontSize = 40.sp, modifier = Modifier.padding(10.dp))
 
-            Row {
+            Row(modifier = Modifier.fillMaxWidth(0.85f),horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 val incomeData = TypeBoxData(
+                    title = "Incomes",
+                    items = mapOf(
+                        TransactionCategory.SALARY to 45000,
+
+                    ),
+                    totalSum = 45000
+                )
+                TypeBox(incomeData,modifier = Modifier.weight(1f))
+                val expenseData = TypeBoxData(
                     title = "Expense",
                     items = mapOf(
                         TransactionCategory.FUN to 45000,
                         TransactionCategory.FOOD to 2000,
 
-                    ),
+                        ),
                     totalSum = 47150
                 )
-                TypeBox(incomeData)
+                TypeBox(expenseData ,modifier = Modifier.weight(1f))
 
 
 
