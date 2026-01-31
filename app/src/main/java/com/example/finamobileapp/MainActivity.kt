@@ -6,18 +6,19 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.finamobileapp.components.BalanceBox
 import com.example.finamobileapp.components.Footer
 import com.example.finamobileapp.components.TypeBox
+import com.example.finamobileapp.components.forms.CreateForm
 import com.example.finamobileapp.models.TransactionCategory
 import com.example.finamobileapp.models.TypeBoxData
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,15 +29,21 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
-
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Dashboard() {
+    // Stav pro ovládání modalu
+    var showSheet by remember { mutableStateOf(false) }
 
+    // Explicitní stav sheetu (pomáhá s animací a zobrazením)
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+
+    // HLAVNÍ OBRAZOVKA
     Scaffold(
         bottomBar = {
-            Footer()
+            Footer(onAddClick = { showSheet = true })
         }
     ) { innerPadding ->
         Column(
@@ -47,21 +54,21 @@ fun Dashboard() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(40.dp))
-            Text("FinApp", fontSize = 40.sp, modifier = Modifier.padding(10.dp))
+            Text("Fin App", fontSize = 40.sp, modifier = Modifier.padding(10.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(0.85f),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 val incomeData = TypeBoxData(
-                    title = "Incomes",
+                    title = "Income",
                     items = mapOf(TransactionCategory.SALARY to 45000),
                     totalSum = 45000
                 )
                 TypeBox(incomeData, modifier = Modifier.weight(1f))
 
                 val expenseData = TypeBoxData(
-                    title = "Expense",
+                    title = "Expenses",
                     items = mapOf(
                         TransactionCategory.FUN to 45000,
                         TransactionCategory.FOOD to 2000
@@ -77,10 +84,22 @@ fun Dashboard() {
             Spacer(modifier = Modifier.height(20.dp))
         }
     }
-}
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun DashboardPreview() {
-    Dashboard()
+
+    if (showSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showSheet = false },
+            sheetState = sheetState,
+            containerColor = Color(0xFFD9D9D9),
+
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = 300.dp)
+            ) {
+                CreateForm(onDismiss = { showSheet = false })
+            }
+        }
+    }
 }

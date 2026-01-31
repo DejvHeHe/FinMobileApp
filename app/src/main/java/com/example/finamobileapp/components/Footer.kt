@@ -15,7 +15,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun Footer() {
+fun Footer(onAddClick: () -> Unit) {
+
     Column {
         HorizontalDivider(thickness = 2.dp, color = Color.Black)
         NavigationBar(
@@ -24,7 +25,8 @@ fun Footer() {
         ) {
             NavigationBarItem(
                 selected = false,
-                onClick = { /* create formulář */ },
+                onClick = {println("Kliknuto")
+                    onAddClick()},
                 icon = {
                     Icon(
                         imageVector = Icons.Filled.Add,
@@ -34,6 +36,8 @@ fun Footer() {
                     )
                 }
             )
+
         }
     }
+
 }
