@@ -1,5 +1,6 @@
 package com.example.finamobileapp
 
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,6 +19,7 @@ import com.example.finamobileapp.components.TypeBox
 import com.example.finamobileapp.components.forms.CreateForm
 import com.example.finamobileapp.models.TransactionCategory
 import com.example.finamobileapp.models.TypeBoxData
+import com.example.finamobileapp.models.view_model.TransactionViewModel
 
 
 class MainActivity : ComponentActivity() {
@@ -32,15 +34,15 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Dashboard() {
-    // Stav pro ovládání modalu
+
     var showSheet by remember { mutableStateOf(false) }
 
-    // Explicitní stav sheetu (pomáhá s animací a zobrazením)
+
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
 
-    // HLAVNÍ OBRAZOVKA
+
     Scaffold(
         bottomBar = {
             Footer(onAddClick = { showSheet = true })
@@ -98,7 +100,7 @@ fun Dashboard() {
                     .fillMaxWidth()
                     .defaultMinSize(minHeight = 300.dp)
             ) {
-                CreateForm(onDismiss = { showSheet = false })
+                CreateForm(onDismiss = { showSheet = false }, TransactionViewModel(appliacation = Application()))
             }
         }
     }

@@ -15,11 +15,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.example.finamobileapp.models.Transaction
 import com.example.finamobileapp.models.TransactionCategory
+import com.example.finamobileapp.models.view_model.TransactionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateForm(onDismiss: () -> Unit) {
+fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
 
     var name by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
@@ -28,11 +30,11 @@ fun CreateForm(onDismiss: () -> Unit) {
     var description by remember { mutableStateOf("") }
     var isRecurring by remember { mutableStateOf(false) }
 
-    // Start Date stavy
+
     val startDatePickerState = rememberDatePickerState()
     var showStartDatePicker by remember { mutableStateOf(false) }
 
-    // End Date stavy
+
     val endDatePickerState = rememberDatePickerState()
     var showEndDatePicker by remember { mutableStateOf(false) }
 
@@ -130,13 +132,47 @@ fun CreateForm(onDismiss: () -> Unit) {
                 }
             }
 
+
+
             Button(
-                onClick = { onDismiss() },
+                onClick = {
+
+                    val amountInt = amount.toIntOrNull() ?: 0
+                    val selectedCategoryEnum = TransactionCategory.entries.find { it.name == selectedOption }
+
+                    val selectedDate = startDatePickerState.selectedDateMillis?.let { millis ->
+                        java.time.Instant.ofEpochMilli(millis)
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate()
+                    } ?: java.time.LocalDate.now()
+
+
+                    if (name.isNotBlank() && amountInt > 0 && selectedCategoryEnum != null) {
+                        val newTransaction = Transaction(
+                            name = name,
+                            amount = amountInt,
+                            type =  selectedCategoryEnum.type,
+                            category = selectedCategoryEnum,
+                            date = selectedDate,
+                            description = description
+                        )
+                        viewModel.addTransaction(newTransaction)
+
+
+                        onDismiss()
+                    }
+                },
+
+                enabled = name.isNotBlank() &&
+                        (amount.toIntOrNull() ?: 0) > 0 &&
+                        selectedOption != "Vyber kategorii",
+
                 shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black,
-                    contentColor = Color.White
+                    contentColor = Color.White,
+                    disabledContainerColor = Color.Gray // Barva, když je políčko prázdné
                 )
             ) {
                 Text("Potvrdit")
@@ -174,3 +210,4 @@ fun CreateForm(onDismiss: () -> Unit) {
         }
     }
 }
+

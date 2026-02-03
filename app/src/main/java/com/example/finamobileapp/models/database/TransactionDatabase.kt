@@ -14,7 +14,7 @@ import com.example.finamobileapp.models.Transaction
 @TypeConverters(Converters::class)
 abstract class TransactionDatabase: RoomDatabase() {
 
-    abstract fun getDao(): TransactionDao
+    abstract fun transactionDao(): TransactionDao
 
     companion object{
         @Volatile
