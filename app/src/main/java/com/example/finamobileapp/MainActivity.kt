@@ -1,6 +1,6 @@
 package com.example.finamobileapp
 
-import android.app.Application
+import androidx.lifecycle.viewmodel.compose.viewModel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -20,6 +20,9 @@ import com.example.finamobileapp.components.forms.CreateForm
 import com.example.finamobileapp.models.TransactionCategory
 import com.example.finamobileapp.models.TypeBoxData
 import com.example.finamobileapp.models.view_model.TransactionViewModel
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
 
 
 class MainActivity : ComponentActivity() {
@@ -34,6 +37,7 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Dashboard() {
+    val transactionViewModel: TransactionViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 
     var showSheet by remember { mutableStateOf(false) }
 
@@ -100,7 +104,7 @@ fun Dashboard() {
                     .fillMaxWidth()
                     .defaultMinSize(minHeight = 300.dp)
             ) {
-                CreateForm(onDismiss = { showSheet = false }, TransactionViewModel(appliacation = Application()))
+                CreateForm(onDismiss = { showSheet = false }, viewModel = transactionViewModel)
             }
         }
     }
