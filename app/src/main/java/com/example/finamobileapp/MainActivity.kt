@@ -1,6 +1,6 @@
 package com.example.finamobileapp
 
-import androidx.lifecycle.viewmodel.compose.viewModel
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,12 +17,11 @@ import com.example.finamobileapp.components.BalanceBox
 import com.example.finamobileapp.components.Footer
 import com.example.finamobileapp.components.TypeBox
 import com.example.finamobileapp.components.forms.CreateForm
-import com.example.finamobileapp.models.TransactionCategory
-import com.example.finamobileapp.models.TypeBoxData
 import com.example.finamobileapp.models.view_model.TransactionViewModel
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import java.time.LocalDate
 
 
 class MainActivity : ComponentActivity() {
@@ -40,6 +39,13 @@ fun Dashboard() {
     val transactionViewModel: TransactionViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 
     var showSheet by remember { mutableStateOf(false) }
+    val currentBalance by transactionViewModel
+        .getBalance(LocalDate.now())
+        .collectAsState(initial = 0)
+    val currentTypeSum by transactionViewModel
+        .getSumyByType(LocalDate.now())
+        .collectAsState(initial = emptyMap())
+
 
 
     val sheetState = rememberModalBottomSheetState(
@@ -66,27 +72,17 @@ fun Dashboard() {
                 modifier = Modifier.fillMaxWidth(0.85f),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                val incomeData = TypeBoxData(
-                    title = "Income",
-                    items = mapOf(TransactionCategory.SALARY to 45000),
-                    totalSum = 45000
-                )
-                TypeBox(incomeData, modifier = Modifier.weight(1f))
+                currentTypeSum.forEach {(type,sum)->
+                   val categories=transactionViewModel.getSumyByCategories(LocalDate.now(),type)
+                    TypeBox(name=type.name,amount=sum,categories=categories, modifier = Modifier.weight(1f))
+                }
 
-                val expenseData = TypeBoxData(
-                    title = "Expenses",
-                    items = mapOf(
-                        TransactionCategory.FUN to 45000,
-                        TransactionCategory.FOOD to 2000
-                    ),
-                    totalSum = 47150
-                )
-                TypeBox(expenseData, modifier = Modifier.weight(1f))
+
             }
 
             Spacer(modifier = Modifier.weight(1f))
             Text("Váš zustatek", fontSize = 28.sp)
-            BalanceBox(-5000)
+            BalanceBox(currentBalance)
             Spacer(modifier = Modifier.height(20.dp))
         }
     }
