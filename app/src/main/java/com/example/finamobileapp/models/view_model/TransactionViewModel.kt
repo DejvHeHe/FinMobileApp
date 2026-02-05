@@ -52,6 +52,12 @@ class TransactionViewModel(appliacation:Application):AndroidViewModel(appliacati
             list.filter { it.type===type }.groupBy { it.category }.mapValues { entry->entry.value.sumOf { it.amount } }
         }
     }
+    fun getTransactions(date: LocalDate,category: TransactionCategory):Flow<List<Transaction>>
+    {
+        return fillterByMonth(date).map { list->
+            list.filter { it.category==category }
+        }
+    }
     fun fillterByMonth(date: LocalDate):Flow<List<Transaction>>
     {
         return allTransactions.map { list ->

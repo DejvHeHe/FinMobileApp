@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.finamobileapp.models.TransactionCategory
 import kotlinx.coroutines.flow.Flow
 
@@ -25,7 +26,8 @@ fun TypeBox(
     name: String,
     amount: Int,
     categories: Flow<Map<TransactionCategory, Int>>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavHostController
 ) {
 
     val cats by categories.collectAsState(initial = emptyMap())
@@ -49,7 +51,7 @@ fun TypeBox(
 
             cats.forEach { (category, sum) ->
 
-                CategoryBox(category, sum)
+                CategoryBox(category, sum,navController)
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 5.dp).fillMaxWidth(),
                     thickness = 1.dp,
