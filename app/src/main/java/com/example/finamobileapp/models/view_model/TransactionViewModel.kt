@@ -14,13 +14,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
-class TransactionViewModel(appliacation:Application):AndroidViewModel(appliacation) {
+class TransactionViewModel(application:Application):AndroidViewModel(application) {
 
     private val allTransactions : Flow<List<Transaction>>
     private val repository: TransactionRepository
 
     init{
-        val transactionDao=TransactionDatabase.getDatabase(appliacation).transactionDao()
+        val transactionDao=TransactionDatabase.getDatabase(application).transactionDao()
         repository=TransactionRepository(transactionDao)
         allTransactions=repository.allTransactions
     }
@@ -73,6 +73,7 @@ class TransactionViewModel(appliacation:Application):AndroidViewModel(appliacati
     {
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteTransaction(transaction)
+            println("DEBUG: Pokouším se smazat transakci: ${transaction.name} s ID: ${transaction.id}")
         }
 
     }

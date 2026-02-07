@@ -24,10 +24,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.window.Popup
 import com.example.finamobileapp.components.forms.DeleteForm
+import com.example.finamobileapp.models.view_model.TransactionViewModel
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TransactionBox(transaction: Transaction) {
+fun TransactionBox(transaction: Transaction,onDelete:()->Unit) {
     var isOpen by remember { mutableStateOf(false) }
 
     Card(modifier = Modifier
@@ -51,7 +52,7 @@ fun TransactionBox(transaction: Transaction) {
         {
             ShowOptions(closeOptions={
                 isOpen=false
-            },transaction)
+            },transaction,onDelete)
         }
 
 
@@ -61,7 +62,7 @@ fun TransactionBox(transaction: Transaction) {
 
 }
 @Composable
-fun ShowOptions(closeOptions:()->Unit,transaction: Transaction)
+fun ShowOptions(closeOptions:()->Unit,transaction: Transaction,onDelete:()->Unit)
 {
     var isDeleteFormOpen by remember { mutableStateOf(false) }
     Popup(onDismissRequest = closeOptions) {
@@ -79,7 +80,7 @@ fun ShowOptions(closeOptions:()->Unit,transaction: Transaction)
     }
     if(isDeleteFormOpen)
     {
-        DeleteForm(onDismiss ={isDeleteFormOpen=false},transaction)
+        DeleteForm(onDismiss ={isDeleteFormOpen=false},transaction,onDelete,closeOptions)
     }
 
 
