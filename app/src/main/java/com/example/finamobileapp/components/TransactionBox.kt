@@ -1,6 +1,7 @@
 package com.example.finamobileapp.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.window.Popup
+import com.example.finamobileapp.components.forms.DeleteForm
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -33,7 +35,7 @@ fun TransactionBox(transaction: Transaction) {
         .padding(10.dp)
         .combinedClickable(
             onClick = { /* TODO */ },
-            onLongClick = { isOpen=!isOpen }
+            onLongClick = { isOpen=true }
         )
     ) {
 
@@ -49,7 +51,7 @@ fun TransactionBox(transaction: Transaction) {
         {
             ShowOptions(closeOptions={
                 isOpen=false
-            })
+            },transaction)
         }
 
 
@@ -59,13 +61,14 @@ fun TransactionBox(transaction: Transaction) {
 
 }
 @Composable
-fun ShowOptions(closeOptions:()->Unit)
+fun ShowOptions(closeOptions:()->Unit,transaction: Transaction)
 {
+    var isDeleteFormOpen by remember { mutableStateOf(false) }
     Popup(onDismissRequest = closeOptions) {
 
         Card(modifier = Modifier.padding(10.dp).fillMaxWidth(0.40f), colors = CardDefaults.cardColors(containerColor = Color.White, contentColor = Color.Black)) {
             Column {
-                Text("Smazat",modifier = Modifier.padding(vertical = 8.dp))
+                Text("Smazat",modifier = Modifier.padding(vertical = 8.dp).clickable { isDeleteFormOpen=true })
                 Text("Upravit",modifier = Modifier.padding(vertical = 8.dp))
 
             }
@@ -73,6 +76,10 @@ fun ShowOptions(closeOptions:()->Unit)
 
         }
 
+    }
+    if(isDeleteFormOpen)
+    {
+        DeleteForm(onDismiss ={isDeleteFormOpen=false},transaction)
     }
 
 

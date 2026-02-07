@@ -13,7 +13,7 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions_table ORDER BY date DESC")
     fun getAllTransactions(): Flow<List<Transaction>>
 
-    // Pro možnost smazání transakce
+
     @Delete
     suspend fun deleteTransaction(transaction: Transaction)
 }
