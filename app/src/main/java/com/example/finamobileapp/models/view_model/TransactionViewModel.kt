@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.util.Locale
 
 class TransactionViewModel(application:Application):AndroidViewModel(application) {
 
@@ -52,6 +53,12 @@ class TransactionViewModel(application:Application):AndroidViewModel(application
             list.filter { it.type===type }.groupBy { it.category }.mapValues { entry->entry.value.sumOf { it.amount } }
         }
     }
+    fun getSumForCategory(date: LocalDate, category: TransactionCategory): Flow<Int> {
+        return fillterByMonth(date).map { list ->
+            list.filter { it.category == category }
+                .sumOf { it.amount }
+        }
+    }
     fun getTransactions(date: LocalDate,category: TransactionCategory):Flow<List<Transaction>>
     {
         return fillterByMonth(date).map { list->
@@ -85,6 +92,8 @@ class TransactionViewModel(application:Application):AndroidViewModel(application
         }
 
     }
+
+
 
 
 

@@ -23,8 +23,12 @@ import androidx.navigation.compose.rememberNavController
 
 import com.example.finamobileapp.components.BalanceBox
 import com.example.finamobileapp.components.Footer
+import com.example.finamobileapp.components.GoalBox
 import com.example.finamobileapp.components.TypeBox
 import com.example.finamobileapp.components.forms.CreateForm
+import com.example.finamobileapp.models.MonthlyGoal
+import com.example.finamobileapp.models.TransactionCategory
+import com.example.finamobileapp.models.view_model.MonthlyGoalViewModel
 import com.example.finamobileapp.models.view_model.TransactionViewModel
 import com.example.finamobileapp.screens.CategoryDetail
 
@@ -74,6 +78,12 @@ fun Dashboard(navController: NavHostController) {
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
+    val monthGoalViewModel: MonthlyGoalViewModel=androidx.lifecycle.viewmodel.compose.viewModel()
+
+
+
+
+
 
     Scaffold(
         bottomBar = {
@@ -120,6 +130,18 @@ fun Dashboard(navController: NavHostController) {
             BalanceBox(currentBalance)
 
             Spacer(modifier = Modifier.height(20.dp))
+
+            GoalBox(
+                goalFlow = monthGoalViewModel.getCurrentMonthGoal(),
+                savingsFlow = transactionViewModel.getSumForCategory(LocalDate.now(), TransactionCategory.SAVINGS),
+                investmentFlow = transactionViewModel.getSumForCategory(LocalDate.now(), TransactionCategory.INVESTMENT),
+                onSaveClick = { updatedGoal ->
+
+                    monthGoalViewModel.setGoal(updatedGoal)
+                }
+            )
+
+
         }
     }
 

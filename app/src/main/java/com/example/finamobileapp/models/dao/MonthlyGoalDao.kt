@@ -5,12 +5,12 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.finamobileapp.models.MonthlyGoal // Cesta k tvé nové entitě
+import com.example.finamobileapp.models.MonthlyGoal
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface GoalDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE) // Tohle zajistí ten "Upsert"
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrUpdateGoal(goal: MonthlyGoal)
 
     @Query("SELECT * FROM monthly_goals WHERE year = :year AND month = :month")
