@@ -33,7 +33,7 @@ fun TypeBox(
     val cats by categories.collectAsState(initial = emptyMap())
 
     Card(
-        modifier = modifier.fillMaxWidth(0.50f),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(15.dp),
         border = BorderStroke(1.dp, Color.Black),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFD9D9D9)),

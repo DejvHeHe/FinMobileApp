@@ -5,6 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,7 +28,6 @@ import com.example.finamobileapp.components.Footer
 import com.example.finamobileapp.components.GoalBox
 import com.example.finamobileapp.components.TypeBox
 import com.example.finamobileapp.components.forms.CreateForm
-import com.example.finamobileapp.models.MonthlyGoal
 import com.example.finamobileapp.models.TransactionCategory
 import com.example.finamobileapp.models.view_model.MonthlyGoalViewModel
 import com.example.finamobileapp.models.view_model.TransactionViewModel
@@ -63,9 +64,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Dashboard(navController: NavHostController) {
     val transactionViewModel: TransactionViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    val monthGoalViewModel: MonthlyGoalViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 
     var showSheet by remember { mutableStateOf(false) }
-
+    val scrollState = rememberScrollState()
 
     val currentBalance by transactionViewModel
         .getBalance(LocalDate.now())
@@ -75,15 +77,7 @@ fun Dashboard(navController: NavHostController) {
         .getSumyByType(LocalDate.now())
         .collectAsState(initial = emptyMap())
 
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
-    val monthGoalViewModel: MonthlyGoalViewModel=androidx.lifecycle.viewmodel.compose.viewModel()
-
-
-
-
-
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Scaffold(
         bottomBar = {
@@ -94,7 +88,8 @@ fun Dashboard(navController: NavHostController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(Color(0xFFA69D9D)),
+                .background(Color(0xFFA69D9D))
+                .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(40.dp))
@@ -105,10 +100,9 @@ fun Dashboard(navController: NavHostController) {
                 modifier = Modifier.padding(10.dp)
             )
 
-
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(0.85f),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 currentTypeSum.forEach { (type, sum) ->
                     val categories = transactionViewModel.getSumyByCategories(LocalDate.now(), type)
@@ -117,14 +111,12 @@ fun Dashboard(navController: NavHostController) {
                         name = type.name,
                         amount = sum,
                         categories = categories,
-                        modifier = Modifier.weight(1f),
-                        navController
-
+                        navController = navController
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(30.dp))
 
             Text("Váš zůstatek", fontSize = 28.sp)
             BalanceBox(currentBalance)
@@ -136,15 +128,13 @@ fun Dashboard(navController: NavHostController) {
                 savingsFlow = transactionViewModel.getSumForCategory(LocalDate.now(), TransactionCategory.SAVINGS),
                 investmentFlow = transactionViewModel.getSumForCategory(LocalDate.now(), TransactionCategory.INVESTMENT),
                 onSaveClick = { updatedGoal ->
-
                     monthGoalViewModel.setGoal(updatedGoal)
                 }
             )
 
-
+            Spacer(modifier = Modifier.height(40.dp))
         }
     }
-
 
     if (showSheet) {
         ModalBottomSheet(
