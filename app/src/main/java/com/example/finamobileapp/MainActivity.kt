@@ -26,26 +26,26 @@ import com.example.finamobileapp.components.Footer
 import com.example.finamobileapp.components.TypeBox
 import com.example.finamobileapp.components.forms.CreateForm
 import com.example.finamobileapp.models.view_model.TransactionViewModel
-import com.example.finamobileapp.screens.CategoryDetail // Ujisti se, že máš CategoryDetail v tomto balíčku
+import com.example.finamobileapp.screens.CategoryDetail
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // Inicializace navigace
+
             val navController = rememberNavController()
 
-            // Definice tras aplikace
+
             NavHost(
                 navController = navController,
                 startDestination = "dashboard"
             ) {
-                // Hlavní obrazovka
+
                 composable("dashboard") {
                     Dashboard(navController)
                 }
 
-                // Detail kategorie s parametrem
+
                 composable("CategoryDetail/{categoryName}") { backStackEntry ->
                     val catName = backStackEntry.arguments?.getString("categoryName") ?: "Unknown"
                     CategoryDetail(catName)
@@ -62,7 +62,7 @@ fun Dashboard(navController: NavHostController) {
 
     var showSheet by remember { mutableStateOf(false) }
 
-    // Sběr dat z ViewModelu
+
     val currentBalance by transactionViewModel
         .getBalance(LocalDate.now())
         .collectAsState(initial = 0)
@@ -95,7 +95,7 @@ fun Dashboard(navController: NavHostController) {
                 modifier = Modifier.padding(10.dp)
             )
 
-            // Horní řada s TypeBoxy (Příjmy / Výdaje)
+
             Row(
                 modifier = Modifier.fillMaxWidth(0.85f),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -123,7 +123,7 @@ fun Dashboard(navController: NavHostController) {
         }
     }
 
-    // Bottom Sheet pro přidání transakce
+
     if (showSheet) {
         ModalBottomSheet(
             onDismissRequest = { showSheet = false },

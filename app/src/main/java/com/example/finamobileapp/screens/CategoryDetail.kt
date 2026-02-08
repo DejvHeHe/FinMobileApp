@@ -40,7 +40,9 @@ fun CategoryDetail(categoryName:String) {
             )
 
             transactions.value.forEach {item->
-                TransactionBox(transaction=item,onDelete ={ transactionViewModel.deleteTransaction(item)})
+                TransactionBox(transaction=item,onDelete ={ transactionViewModel.deleteTransaction(item)},onUpdate = { updatedItem ->
+                    transactionViewModel.updateTransaction(updatedItem)
+                })
 
             }
 

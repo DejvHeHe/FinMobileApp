@@ -77,6 +77,14 @@ class TransactionViewModel(application:Application):AndroidViewModel(application
         }
 
     }
+    fun updateTransaction(transaction: Transaction)
+    {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateTransaction(transaction)
+            println("DEBUG: Pokouším se upravit transakci: ${transaction.name} s ID: ${transaction.id}")
+        }
+
+    }
 
 
 
