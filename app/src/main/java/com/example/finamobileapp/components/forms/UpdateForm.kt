@@ -25,14 +25,14 @@ fun UpdateForm(
     onUpdate: (Transaction) -> Unit,
     closeOptions: () -> Unit
 ) {
-    // Inicializujeme stavy hodnotami z existující transakce
+
     var name by remember { mutableStateOf(transaction.name) }
     var amount by remember { mutableStateOf(transaction.amount.toString()) }
     var expanded by remember { mutableStateOf(false) }
     var selectedOption by remember { mutableStateOf(transaction.category.name) }
     var description by remember { mutableStateOf(transaction.description) }
 
-    // Inicializace DatePickerState s původním datem transakce (pokud je dostupné v millis)
+
     val startDatePickerState = rememberDatePickerState()
     var showStartDatePicker by remember { mutableStateOf(false) }
 
@@ -116,10 +116,10 @@ fun UpdateForm(
                         Instant.ofEpochMilli(millis)
                             .atZone(ZoneId.systemDefault())
                             .toLocalDate()
-                    } ?: transaction.date // Pokud datum nezmění, necháme původní
+                    } ?: transaction.date
 
                     if (name.isNotBlank() && amountInt > 0 && selectedCategoryEnum != null) {
-                        // Vytvoření kopie se zachováním ID (klíčové pro Room @Update)
+
                         val updatedTransaction = transaction.copy(
                             name = name,
                             amount = amountInt,

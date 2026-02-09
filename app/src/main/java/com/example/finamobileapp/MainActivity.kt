@@ -3,155 +3,84 @@ package com.example.finamobileapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import java.time.LocalDate
-
-// --- IMPORTY PRO NAVIGACI ---
-import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-// ----------------------------
-
-import com.example.finamobileapp.components.BalanceBox
 import com.example.finamobileapp.components.Footer
-import com.example.finamobileapp.components.GoalBox
-import com.example.finamobileapp.components.TypeBox
 import com.example.finamobileapp.components.forms.CreateForm
-import com.example.finamobileapp.models.TransactionCategory
-import com.example.finamobileapp.models.view_model.MonthlyGoalViewModel
 import com.example.finamobileapp.models.view_model.TransactionViewModel
+import com.example.finamobileapp.screens.ArchiveScreen
 import com.example.finamobileapp.screens.CategoryDetail
+import com.example.finamobileapp.screens.Dashboard
+
 
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-
             val navController = rememberNavController()
+            val transactionViewModel: TransactionViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+
+            var showSheet by remember { mutableStateOf(false) }
+            val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
 
-            NavHost(
-                navController = navController,
-                startDestination = "dashboard"
-            ) {
-
-                composable("dashboard") {
-                    Dashboard(navController)
-                }
 
 
-                composable("CategoryDetail/{categoryName}") { backStackEntry ->
-                    val catName = backStackEntry.arguments?.getString("categoryName") ?: "Unknown"
-                    CategoryDetail(catName)
-                }
-            }
-        }
-    }
-}
+            Scaffold(
+                bottomBar = {
+                    Footer(
+                        onAddClick = { showSheet = true },
+                        navController = navController,
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun Dashboard(navController: NavHostController) {
-    val transactionViewModel: TransactionViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
-    val monthGoalViewModel: MonthlyGoalViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
-
-    var showSheet by remember { mutableStateOf(false) }
-    val scrollState = rememberScrollState()
-
-    val currentBalance by transactionViewModel
-        .getBalance(LocalDate.now())
-        .collectAsState(initial = 0)
-
-    val currentTypeSum by transactionViewModel
-        .getSumyByType(LocalDate.now())
-        .collectAsState(initial = emptyMap())
-
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    Scaffold(
-        bottomBar = {
-            Footer(onAddClick = { showSheet = true })
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .background(Color(0xFFA69D9D))
-                .verticalScroll(scrollState),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(40.dp))
-
-            Text(
-                text = "Fin App",
-                fontSize = 40.sp,
-                modifier = Modifier.padding(10.dp)
-            )
-
-            Column(
-                modifier = Modifier.fillMaxWidth(0.85f),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                currentTypeSum.forEach { (type, sum) ->
-                    val categories = transactionViewModel.getSumyByCategories(LocalDate.now(), type)
-
-                    TypeBox(
-                        name = type.name,
-                        amount = sum,
-                        categories = categories,
-                        navController = navController
                     )
                 }
+            ) { innerPadding ->
+                NavHost(
+                    navController = navController,
+                    startDestination = "dashboard",
+                    modifier = Modifier.padding(innerPadding)
+                ) {
+                    composable("dashboard") {
+                        Dashboard(navController, transactionViewModel)
+                    }
+                    composable("archive") {
+                        ArchiveScreen()
+                    }
+                    composable("CategoryDetail/{categoryName}") { backStackEntry ->
+                        val catName = backStackEntry.arguments?.getString("categoryName") ?: "Unknown"
+                        CategoryDetail(catName)
+                    }
+                }
             }
 
-            Spacer(modifier = Modifier.height(30.dp))
-
-            Text("Váš zůstatek", fontSize = 28.sp)
-            BalanceBox(currentBalance)
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            GoalBox(
-                goalFlow = monthGoalViewModel.getCurrentMonthGoal(),
-                savingsFlow = transactionViewModel.getSumForCategory(LocalDate.now(), TransactionCategory.SAVINGS),
-                investmentFlow = transactionViewModel.getSumForCategory(LocalDate.now(), TransactionCategory.INVESTMENT),
-                onSaveClick = { updatedGoal ->
-                    monthGoalViewModel.setGoal(updatedGoal)
+            if (showSheet) {
+                ModalBottomSheet(
+                    onDismissRequest = { showSheet = false },
+                    sheetState = sheetState,
+                    containerColor = Color(0xFFD9D9D9),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .defaultMinSize(minHeight = 300.dp)
+                    ) {
+                        CreateForm(
+                            onDismiss = { showSheet = false },
+                            viewModel = transactionViewModel
+                        )
+                    }
                 }
-            )
-
-            Spacer(modifier = Modifier.height(40.dp))
-        }
-    }
-
-    if (showSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { showSheet = false },
-            sheetState = sheetState,
-            containerColor = Color(0xFFD9D9D9),
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .defaultMinSize(minHeight = 300.dp)
-            ) {
-                CreateForm(
-                    onDismiss = { showSheet = false },
-                    viewModel = transactionViewModel
-                )
             }
         }
     }
 }
+

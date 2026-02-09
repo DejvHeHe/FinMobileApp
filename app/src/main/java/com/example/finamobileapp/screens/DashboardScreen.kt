@@ -1,0 +1,89 @@
+package com.example.finamobileapp.screens
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import com.example.finamobileapp.components.BalanceBox
+import com.example.finamobileapp.components.GoalBox
+import com.example.finamobileapp.components.TypeBox
+import com.example.finamobileapp.models.TransactionCategory
+import com.example.finamobileapp.models.view_model.MonthlyGoalViewModel
+import com.example.finamobileapp.models.view_model.TransactionViewModel
+import java.time.LocalDate
+
+@Composable
+fun Dashboard(navController: NavHostController, transactionViewModel: TransactionViewModel) {
+    val monthGoalViewModel: MonthlyGoalViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    val scrollState = rememberScrollState()
+
+    val currentBalance by transactionViewModel
+        .getBalance(LocalDate.now())
+        .collectAsState(initial = 0)
+
+    val currentTypeSum by transactionViewModel
+        .getSumyByType(LocalDate.now())
+        .collectAsState(initial = emptyMap())
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFA69D9D))
+            .verticalScroll(scrollState),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(40.dp))
+
+        Text(
+            text = "Fin App",
+            fontSize = 40.sp,
+            modifier = Modifier.padding(10.dp)
+        )
+
+        Column(
+            modifier = Modifier.fillMaxWidth(0.85f),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            currentTypeSum.forEach { (type, sum) ->
+                val categories = transactionViewModel.getSumyByCategories(LocalDate.now(), type)
+                TypeBox(
+                    name = type.name,
+                    amount = sum,
+                    categories = categories,
+                    navController = navController
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(30.dp))
+        Text("Váš zůstatek", fontSize = 28.sp)
+        BalanceBox(currentBalance)
+        Spacer(modifier = Modifier.height(20.dp))
+
+        GoalBox(
+            goalFlow = monthGoalViewModel.getCurrentMonthGoal(),
+            savingsFlow = transactionViewModel.getSumForCategory(LocalDate.now(), TransactionCategory.SAVINGS),
+            investmentFlow = transactionViewModel.getSumForCategory(LocalDate.now(), TransactionCategory.INVESTMENT),
+            onSaveClick = { updatedGoal ->
+                monthGoalViewModel.setGoal(updatedGoal)
+            }
+        )
+        Spacer(modifier = Modifier.height(40.dp))
+    }
+}
