@@ -50,13 +50,18 @@ fun TypeBox(
 
 
             cats.forEach { (category, sum) ->
+                if(category!=TransactionCategory.SAVINGS && category!=TransactionCategory.TRANSFER)
+                {
+                    CategoryBox(category, sum,navController)
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 5.dp).fillMaxWidth(),
+                        thickness = 1.dp,
+                        color = Color.Black
+                    )
 
-                CategoryBox(category, sum,navController)
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 5.dp).fillMaxWidth(),
-                    thickness = 1.dp,
-                    color = Color.Black
-                )
+                }
+
+
             }
 
             Text(

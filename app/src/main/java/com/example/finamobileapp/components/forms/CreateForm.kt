@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.example.finamobileapp.models.TransactionAccountType
 import com.example.finamobileapp.models.Transaction
 import com.example.finamobileapp.models.TransactionCategory
 import com.example.finamobileapp.models.view_model.TransactionViewModel
@@ -25,8 +26,10 @@ fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
 
     var name by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
-    var expanded by remember { mutableStateOf(false) }
-    var selectedOption by remember { mutableStateOf("Vyber kategorii") }
+    var expandedCategory by remember { mutableStateOf(false) }
+    var expandedAccountType by remember { mutableStateOf(false) }
+    var selectedOptionCategory by remember { mutableStateOf("Vyber kategorii") }
+    var selectedOptionAccType by remember { mutableStateOf("Vyber z ktereho učtu posílaš peníze") }
     var description by remember { mutableStateOf("") }
     var isRecurring by remember { mutableStateOf(false) }
 
@@ -67,32 +70,68 @@ fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
             )
 
             ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded }
+                expanded = expandedCategory,
+                onExpandedChange = { expandedCategory = !expandedCategory }
             ) {
                 OutlinedTextField(
-                    value = selectedOption,
+                    value = selectedOptionCategory ,
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Kategorie") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategory) },
                     modifier = Modifier.menuAnchor().fillMaxWidth()
                 )
                 ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    expanded = expandedCategory,
+                    onDismissRequest = { expandedCategory = false }
                 ) {
                     TransactionCategory.entries.forEach { category ->
-                        DropdownMenuItem(
-                            text = { Text(category.name) },
-                            onClick = {
-                                selectedOption = category.name
-                                expanded = false
-                            }
-                        )
+                        if (TransactionCategory.valueOf(category.name)!=TransactionCategory.SAVINGS)
+                        {
+                            DropdownMenuItem(
+                                text = { Text(category.name) },
+                                onClick = {
+                                    selectedOptionCategory  = category.name
+                                    expandedCategory = false
+                                }
+                            )
+
+                        }
+
                     }
                 }
             }
+
+            ExposedDropdownMenuBox(
+                expanded=expandedAccountType,
+                onExpandedChange = {expandedAccountType=!expandedAccountType}
+            ) {
+                OutlinedTextField(
+                    value = selectedOptionAccType ,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Učet ze kterého posílate peníze") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedAccountType) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = expandedAccountType,
+                    onDismissRequest = {expandedAccountType=false}
+                ) {
+                    TransactionAccountType.entries.forEach { accountType ->
+                        DropdownMenuItem(
+                            text = { Text(accountType.name) },
+                            onClick = {
+                                selectedOptionAccType  = accountType.name
+                                expandedAccountType = false
+                            }
+                        )
+
+                    }
+                }
+
+            }
+
 
             OutlinedButton(
                 onClick = { showStartDatePicker = true },
@@ -138,8 +177,8 @@ fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
                 onClick = {
 
                     val amountInt = amount.toIntOrNull() ?: 0
-                    val selectedCategoryEnum = TransactionCategory.entries.find { it.name == selectedOption }
-
+                    val selectedCategoryEnum = TransactionCategory.entries.find { it.name == selectedOptionCategory  }
+                    val selectedAccountTypeEnum=TransactionAccountType.entries.find{it.name==selectedOptionAccType}
                     val selectedDate = startDatePickerState.selectedDateMillis?.let { millis ->
                         java.time.Instant.ofEpochMilli(millis)
                             .atZone(java.time.ZoneId.systemDefault())
@@ -147,12 +186,13 @@ fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
                     } ?: java.time.LocalDate.now()
 
 
-                    if (name.isNotBlank() && amountInt > 0 && selectedCategoryEnum != null) {
+                    if (name.isNotBlank() && amountInt > 0 && selectedCategoryEnum != null && selectedAccountTypeEnum !=null) {
                         val newTransaction = Transaction(
                             name = name,
                             amount = amountInt,
                             type =  selectedCategoryEnum.type,
                             category = selectedCategoryEnum,
+                            accountType = selectedAccountTypeEnum,
                             date = selectedDate,
                             description = description
                         )
@@ -165,7 +205,7 @@ fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
 
                 enabled = name.isNotBlank() &&
                         (amount.toIntOrNull() ?: 0) > 0 &&
-                        selectedOption != "Vyber kategorii",
+                        selectedOptionCategory  != "Vyber kategorii",
 
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.fillMaxWidth().padding(top = 16.dp),

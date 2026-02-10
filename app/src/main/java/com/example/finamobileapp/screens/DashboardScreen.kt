@@ -3,6 +3,7 @@ package com.example.finamobileapp.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -23,6 +25,7 @@ import androidx.navigation.NavHostController
 import com.example.finamobileapp.components.BalanceBox
 import com.example.finamobileapp.components.GoalBox
 import com.example.finamobileapp.components.TypeBox
+import com.example.finamobileapp.models.TransactionAccountType
 import com.example.finamobileapp.models.TransactionCategory
 import com.example.finamobileapp.models.view_model.MonthlyGoalViewModel
 import com.example.finamobileapp.models.view_model.TransactionViewModel
@@ -33,8 +36,12 @@ fun Dashboard(navController: NavHostController, transactionViewModel: Transactio
     val monthGoalViewModel: MonthlyGoalViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
     val scrollState = rememberScrollState()
 
-    val currentBalance by transactionViewModel
-        .getBalance(LocalDate.now())
+    val currentBalanceRegular by transactionViewModel
+        .getBalance(LocalDate.now(),TransactionAccountType.REGULAR)
+        .collectAsState(initial = 0)
+
+    val curretntBalanceSavings by transactionViewModel
+        .getBalance(LocalDate.now(),TransactionAccountType.SAVINGS)
         .collectAsState(initial = 0)
 
     val currentTypeSum by transactionViewModel
@@ -72,13 +79,43 @@ fun Dashboard(navController: NavHostController, transactionViewModel: Transactio
         }
 
         Spacer(modifier = Modifier.height(30.dp))
-        Text("Váš zůstatek", fontSize = 28.sp)
-        BalanceBox(currentBalance)
+        Text("Váše zustatky", fontSize = 28.sp)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Normální účet",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontSize = 20.sp
+                )
+                BalanceBox(currentBalanceRegular)
+            }
+
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Spořicí účet",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontSize = 20.sp
+                )
+                BalanceBox(curretntBalanceSavings)
+            }
+        }
+
         Spacer(modifier = Modifier.height(20.dp))
 
         GoalBox(
             goalFlow = monthGoalViewModel.getCurrentMonthGoal(),
-            savingsFlow = transactionViewModel.getSumForCategory(LocalDate.now(), TransactionCategory.SAVINGS),
+            savingsFlow = transactionViewModel.getBalance(LocalDate.now(), TransactionAccountType.SAVINGS),
             investmentFlow = transactionViewModel.getSumForCategory(LocalDate.now(), TransactionCategory.INVESTMENT),
             onSaveClick = { updatedGoal ->
                 monthGoalViewModel.setGoal(updatedGoal)

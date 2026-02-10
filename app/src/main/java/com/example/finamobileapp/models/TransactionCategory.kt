@@ -11,5 +11,10 @@ enum class TransactionCategory(val type: TransactionType) {
     FUN(TransactionType.EXPENSE),
     INVESTMENT(TransactionType.EXPENSE),
     FOOD(TransactionType.EXPENSE),
-    RENT(TransactionType.EXPENSE)
+    RENT(TransactionType.EXPENSE),
+
+
+    //TRANSAFER
+    TRANSFER(TransactionType.EXPENSE),
+
 }

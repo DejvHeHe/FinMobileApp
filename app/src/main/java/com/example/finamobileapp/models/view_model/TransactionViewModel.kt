@@ -3,6 +3,7 @@ package com.example.finamobileapp.models.view_model
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.finamobileapp.models.TransactionAccountType
 import com.example.finamobileapp.models.Transaction
 import com.example.finamobileapp.models.TransactionCategory
 import com.example.finamobileapp.models.TransactionType
@@ -13,7 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.util.Locale
+
 
 class TransactionViewModel(application:Application):AndroidViewModel(application) {
 
@@ -27,20 +28,43 @@ class TransactionViewModel(application:Application):AndroidViewModel(application
     }
     fun addTransaction(transaction: Transaction) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.addTransaction(transaction)
+
+            if(transaction.category==TransactionCategory.TRANSFER)
+            {
+                if(transaction.accountType==TransactionAccountType.REGULAR)
+                {
+                    repository.addTransaction(transaction.copy(type = TransactionType.INCOME, accountType = TransactionAccountType.SAVINGS, category = TransactionCategory.SAVINGS))
+                    repository.addTransaction(transaction)
+
+                }
+                else{
+                    repository.addTransaction(transaction.copy(type=TransactionType.INCOME, accountType = TransactionAccountType.REGULAR))
+                    repository.addTransaction(transaction)
+
+
+                }
+
+
+            }
+            else{
+                repository.addTransaction(transaction)
+            }
+
         }
     }
 
-    fun getBalance(date: LocalDate): Flow<Int> {
+    fun getBalance(date: LocalDate,accountType: TransactionAccountType): Flow<Int> {
         return fillterByMonth(date).map { list ->
-            list.sumOf {
+            list.filter { it.accountType==accountType }
+            .sumOf {
                 if (it.type == TransactionType.INCOME) it.amount else -it.amount
             }
         }
     }
     fun getSumyByType(date: LocalDate): Flow<Map<TransactionType, Int>> {
         return fillterByMonth(date).map { list ->
-            list.groupBy { it.type }
+            list.filter{it.category!=TransactionCategory.SAVINGS && it.category!=TransactionCategory.TRANSFER}
+            .groupBy { it.type }
                 .mapValues { entry ->
                     entry.value.sumOf { it.amount }
                 }

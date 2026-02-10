@@ -13,6 +13,7 @@ data class Transaction(
     val amount: Int,
     val category: TransactionCategory,
     val type: TransactionType,
+    val accountType: TransactionAccountType,
     val date: LocalDate,
     val description: String
 )
