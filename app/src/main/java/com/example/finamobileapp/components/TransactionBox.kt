@@ -69,6 +69,7 @@ fun TransactionBox(
                     fontSize = 20.sp,
                     modifier = Modifier.padding(5.dp)
                 )
+
             }
         }
 
@@ -88,6 +89,7 @@ fun TransactionBox(
 
 
         }
+
     }
 }
 
@@ -129,6 +131,23 @@ fun ShowOptions(
                         .clickable { isUpdateFormOpen = true }
                         .padding(12.dp)
                 )
+                if(transaction.groupId!=null)
+                {
+                    Text(
+                        text = "Smazat",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { isDeleteFormOpen = true }
+                            .padding(12.dp)
+                    )
+                    Text(
+                        text = "Upravit",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { isUpdateFormOpen = true }
+                            .padding(12.dp)
+                    )
+                }
             }
         }
     }

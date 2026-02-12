@@ -15,5 +15,6 @@ data class Transaction(
     val type: TransactionType,
     val accountType: TransactionAccountType,
     val date: LocalDate,
-    val description: String
+    val description: String,
+    val groupId:String?
 )

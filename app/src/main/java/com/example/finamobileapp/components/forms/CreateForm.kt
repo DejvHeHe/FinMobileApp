@@ -40,6 +40,7 @@ fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
 
     val endDatePickerState = rememberDatePickerState()
     var showEndDatePicker by remember { mutableStateOf(false) }
+    var groupId:String?=null
 
     Card(
         modifier = Modifier
@@ -169,6 +170,7 @@ fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
                 ) {
                     Text("Vybrat datum konce")
                 }
+                groupId=java.util.UUID.randomUUID().toString()
             }
 
 
@@ -194,7 +196,8 @@ fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
                             category = selectedCategoryEnum,
                             accountType = selectedAccountTypeEnum,
                             date = selectedDate,
-                            description = description
+                            description = description,
+                            groupId = groupId
                         )
                         viewModel.addTransaction(newTransaction)
 
