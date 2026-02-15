@@ -28,17 +28,32 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import com.example.finamobileapp.components.forms.DeleteForm
 import com.example.finamobileapp.components.forms.UpdateForm
+import com.example.finamobileapp.components.forms.UpdateRecurringForm
 import com.example.finamobileapp.models.Transaction
+import com.example.finamobileapp.models.TransactionCategory
+import com.example.finamobileapp.models.TransactionType
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TransactionBox(
     transaction: Transaction,
     onDelete: () -> Unit,
-    onUpdate: (Transaction) -> Unit
+    onUpdate: (Transaction) -> Unit,
+    onRecurringDelete:(String)->Unit,
+    onRecurringUpdate: (
+        groupId: String,
+        name: String,
+        amount: Int,
+        category: TransactionCategory,
+        type: TransactionType,
+        description: String
+    ) -> Unit
+
 ) {
     var isOptionsOpen by remember { mutableStateOf(false) }
     var isOpen by remember { mutableStateOf(false) }
+
+
 
     Card(
         modifier = Modifier
@@ -78,7 +93,9 @@ fun TransactionBox(
                 transaction = transaction,
                 closeOptions = { isOptionsOpen = false },
                 onDelete = onDelete,
-                onUpdate = onUpdate
+                onUpdate = onUpdate,
+                onRecurringDelete = onRecurringDelete,
+                onRecurringUpdate=onRecurringUpdate
             )
         }
         if(isOpen)
@@ -99,11 +116,21 @@ fun ShowOptions(
     closeOptions: () -> Unit,
     transaction: Transaction,
     onDelete: () -> Unit,
-    onUpdate: (Transaction) -> Unit
+    onUpdate: (Transaction) -> Unit,
+    onRecurringDelete: (String) -> Unit,
+    onRecurringUpdate: (
+        groupId: String,
+        name: String,
+        amount: Int,
+        category: TransactionCategory,
+        type: TransactionType,
+        description: String
+    ) -> Unit
 ) {
     var isDeleteFormOpen by remember { mutableStateOf(false) }
     var isUpdateFormOpen by remember { mutableStateOf(false) }
-
+    var isRecurringAction by remember { mutableStateOf(false) }
+    var isUpdateRacurringFromOpen by remember { mutableStateOf(false) }
 
     Popup(onDismissRequest = closeOptions) {
         Card(
@@ -118,33 +145,43 @@ fun ShowOptions(
         ) {
             Column {
                 Text(
-                    text = "Smazat",
+                    text = "Smazat pouze tuto transakci",
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { isDeleteFormOpen = true }
+                        .clickable {
+                            isRecurringAction = false // FIX: Resetujeme stav
+                            isDeleteFormOpen = true
+                        }
                         .padding(12.dp)
                 )
                 Text(
-                    text = "Upravit",
+                    text = "Upravit pouze tuto transakci",
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { isUpdateFormOpen = true }
+                        .clickable {
+                            isUpdateFormOpen = true
+                        }
                         .padding(12.dp)
                 )
-                if(transaction.groupId!=null)
-                {
+
+                if (transaction.groupId != null) {
                     Text(
-                        text = "Smazat",
+                        text = "Smazat všechny transakce v řadě",
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { isDeleteFormOpen = true }
+                            .clickable {
+                                isRecurringAction = true
+                                isDeleteFormOpen = true
+                            }
                             .padding(12.dp)
                     )
                     Text(
-                        text = "Upravit",
+                        text = "Upravit všechny transakce v řadě",
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { isUpdateFormOpen = true }
+                            .clickable {
+                                isUpdateRacurringFromOpen = true
+                            }
                             .padding(12.dp)
                     )
                 }
@@ -152,16 +189,20 @@ fun ShowOptions(
         }
     }
 
-
     if (isDeleteFormOpen) {
         DeleteForm(
             onDismiss = { isDeleteFormOpen = false },
             transaction = transaction,
-            onDelete = onDelete,
+            onDelete = {
+                if (isRecurringAction) {
+                    onRecurringDelete(transaction.groupId!!)
+                } else {
+                    onDelete()
+                }
+            },
             closeOptions = closeOptions
         )
     }
-
 
     if (isUpdateFormOpen) {
         ModalBottomSheet(
@@ -184,6 +225,30 @@ fun ShowOptions(
                     closeOptions = closeOptions
                 )
             }
+        }
+    }
+    if(isUpdateRacurringFromOpen) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                isUpdateRacurringFromOpen = false
+                closeOptions()
+            },
+            containerColor = Color(0xFFF0F0F0)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = 400.dp)
+                    .padding(16.dp)
+            ) {
+                UpdateRecurringForm(
+                    onDismiss = { isUpdateRacurringFromOpen = false },
+                    transaction = transaction,
+                    onRecurringUpdate = onRecurringUpdate,
+                    closeOptions = closeOptions
+                )
+            }
+
         }
     }
 }

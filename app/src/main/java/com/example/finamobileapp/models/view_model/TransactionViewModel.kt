@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 
 
 class TransactionViewModel(application:Application):AndroidViewModel(application) {
@@ -51,6 +52,21 @@ class TransactionViewModel(application:Application):AndroidViewModel(application
             }
 
         }
+    }
+    fun addRecurring(transaction: Transaction,endDate: LocalDate)
+    {
+        viewModelScope.launch(Dispatchers.IO)
+        {
+            val startDate=transaction.date
+            val monthsToCreate=ChronoUnit.MONTHS.between(startDate.withDayOfMonth(1), endDate.withDayOfMonth(1))
+            for (i in 0..monthsToCreate)
+            {
+                val transactionCopy=transaction.copy(date=startDate.plusMonths(i))
+                repository.addTransaction(transactionCopy)
+            }
+
+        }
+
     }
 
     fun getBalance(date: LocalDate,accountType: TransactionAccountType): Flow<Int> {
@@ -115,6 +131,23 @@ class TransactionViewModel(application:Application):AndroidViewModel(application
             println("DEBUG: Pokouším se upravit transakci: ${transaction.name} s ID: ${transaction.id}")
         }
 
+    }
+
+    fun deleteRecurring(groupId: String, today: LocalDate)
+    {
+
+        viewModelScope.launch (Dispatchers.IO){
+            repository.deleteRecurring(groupId,today)
+            println("DEBUG:Mažu všechny transakce v řadě")
+        }
+    }
+    fun updateRecurring(groupId: String, name: String, amount: Int, category: TransactionCategory, type: TransactionType, description: String)
+    {
+        viewModelScope.launch(Dispatchers.IO)
+        {
+            repository.updateRecurring(groupId,name,amount,category,type,description)
+            println("DEBUG:Updatuju řadu transakcí")
+        }
     }
 
 

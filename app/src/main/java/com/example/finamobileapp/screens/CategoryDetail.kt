@@ -39,11 +39,33 @@ fun CategoryDetail(categoryName:String) {
                 modifier = Modifier.padding(30.dp), fontSize = 40.sp
             )
 
-            transactions.value.forEach {item->
-                TransactionBox(transaction=item,onDelete ={ transactionViewModel.deleteTransaction(item)},onUpdate = { updatedItem ->
-                    transactionViewModel.updateTransaction(updatedItem)
-                })
+            transactions.value.forEach { item ->
+                TransactionBox(
+                    transaction = item,
+                    onDelete = {
+                        transactionViewModel.deleteTransaction(item)
+                    },
+                    onUpdate = { updatedItem ->
+                        transactionViewModel.updateTransaction(updatedItem)
+                    },
+                    onRecurringDelete = {
+                        if (item.groupId != null) {
 
+                            transactionViewModel.deleteRecurring(item.groupId, today = LocalDate.now())
+                        }
+                    } ,
+                    onRecurringUpdate = { groupId, newName, newAmount, newCategory,newType, newDescription ->
+
+                        transactionViewModel.updateRecurring(
+                            groupId = groupId,
+                            name = newName,
+                            amount = newAmount,
+                            category = newCategory,
+                            type=newType,
+                            description = newDescription
+                        )
+                    }
+                )
             }
 
 

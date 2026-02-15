@@ -87,7 +87,10 @@ fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
                     onDismissRequest = { expandedCategory = false }
                 ) {
                     TransactionCategory.entries.forEach { category ->
-                        if (TransactionCategory.valueOf(category.name)!=TransactionCategory.SAVINGS)
+
+                        val isSavings = category == TransactionCategory.SAVINGS
+                        val isTransferAndRecurring = isRecurring && category == TransactionCategory.TRANSFER
+                        if (!isSavings && !isTransferAndRecurring)
                         {
                             DropdownMenuItem(
                                 text = { Text(category.name) },
@@ -170,8 +173,13 @@ fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
                 ) {
                     Text("Vybrat datum konce")
                 }
-                groupId=java.util.UUID.randomUUID().toString()
+
             }
+            val isDateValid = if (isRecurring) {
+                val start = startDatePickerState.selectedDateMillis
+                val end = endDatePickerState.selectedDateMillis
+                start != null && end != null && end >= start
+            } else true
 
 
 
@@ -187,8 +195,15 @@ fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
                             .toLocalDate()
                     } ?: java.time.LocalDate.now()
 
+                    val endDate = endDatePickerState.selectedDateMillis?.let { millis ->
+                        java.time.Instant.ofEpochMilli(millis)
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate()
+                    } ?: java.time.LocalDate.now()
 
-                    if (name.isNotBlank() && amountInt > 0 && selectedCategoryEnum != null && selectedAccountTypeEnum !=null) {
+
+                    if (name.isNotBlank() && amountInt > 0 && selectedCategoryEnum != null && selectedAccountTypeEnum !=null && !endDate.isBefore(selectedDate)) {
+                        if(isRecurring){groupId=java.util.UUID.randomUUID().toString()}
                         val newTransaction = Transaction(
                             name = name,
                             amount = amountInt,
@@ -199,7 +214,18 @@ fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
                             description = description,
                             groupId = groupId
                         )
-                        viewModel.addTransaction(newTransaction)
+                        if(isRecurring)
+                        {
+
+                            viewModel.addRecurring(newTransaction,endDate)
+
+
+                        }
+                        else{
+                            viewModel.addTransaction(newTransaction)
+
+                        }
+
 
 
                         onDismiss()
@@ -208,14 +234,14 @@ fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
 
                 enabled = name.isNotBlank() &&
                         (amount.toIntOrNull() ?: 0) > 0 &&
-                        selectedOptionCategory  != "Vyber kategorii",
+                        selectedOptionCategory  != "Vyber kategorii" && isDateValid,
 
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black,
                     contentColor = Color.White,
-                    disabledContainerColor = Color.Gray // Barva, když je políčko prázdné
+                    disabledContainerColor = Color.Gray
                 )
             ) {
                 Text("Potvrdit")
