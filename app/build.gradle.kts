@@ -52,6 +52,9 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation("androidx.navigation:navigation-compose:2.8.0")
+    implementation("com.patrykandpatrick.vico:core:2.0.0-alpha.28")
+    implementation("com.patrykandpatrick.vico:compose:2.0.0-alpha.28")
+    implementation("com.patrykandpatrick.vico:compose-m3:2.0.0-alpha.28")
 
     // Room Database
     val room_version = "2.6.1"
