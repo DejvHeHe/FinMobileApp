@@ -16,12 +16,12 @@ import androidx.compose.ui.unit.sp
 import com.example.finamobileapp.models.TransactionCategory
 import com.example.finamobileapp.models.view_model.TransactionViewModel
 import java.time.LocalDate
-
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 
 @Composable
 fun CategoryDetail(categoryName:String) {
-    val transactionViewModel: TransactionViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    val transactionViewModel: TransactionViewModel = viewModel()
     val transactions=transactionViewModel.getTransactions(LocalDate.now(), TransactionCategory.valueOf(categoryName))
         .collectAsState(initial = emptyList())
     Scaffold(
