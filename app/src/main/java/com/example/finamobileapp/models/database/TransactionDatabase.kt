@@ -6,18 +6,25 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.finamobileapp.database.TransactionDao
+import com.example.finamobileapp.models.BuyIdeas
 import com.example.finamobileapp.models.Converters
-import com.example.finamobileapp.models.Transaction
 import com.example.finamobileapp.models.MonthlyGoal
+import com.example.finamobileapp.models.Transaction
+import com.example.finamobileapp.models.dao.BuyIdeasDao
 import com.example.finamobileapp.models.dao.GoalDao
 
 
-@Database(entities = [Transaction::class, MonthlyGoal::class], version = 2, exportSchema = false)
+@Database(
+    entities = [Transaction::class, MonthlyGoal::class, BuyIdeas::class],
+    version = 3,
+    exportSchema = false
+)
 @TypeConverters(Converters::class)
-abstract class TransactionDatabase: RoomDatabase() {
+abstract class TransactionDatabase : RoomDatabase() {
 
     abstract fun transactionDao(): TransactionDao
     abstract fun goalDao(): GoalDao
+    abstract fun buyIdeaDao(): BuyIdeasDao
 
     companion object {
         @Volatile

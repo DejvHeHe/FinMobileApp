@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.finamobileapp.components.BalanceBox
+import com.example.finamobileapp.components.BuyIdeasDashboard
 import com.example.finamobileapp.components.GoalBox
 import com.example.finamobileapp.components.TypeBox
 import com.example.finamobileapp.models.TransactionAccountType
@@ -37,11 +38,11 @@ fun Dashboard(navController: NavHostController, transactionViewModel: Transactio
     val scrollState = rememberScrollState()
 
     val currentBalanceRegular by transactionViewModel
-        .getBalance(LocalDate.now(),TransactionAccountType.REGULAR)
+        .getBalance(LocalDate.now(), TransactionAccountType.REGULAR)
         .collectAsState(initial = 0)
 
     val curretntBalanceSavings by transactionViewModel
-        .getBalance(LocalDate.now(),TransactionAccountType.SAVINGS)
+        .getBalance(LocalDate.now(), TransactionAccountType.SAVINGS)
         .collectAsState(initial = 0)
 
     val currentTypeSum by transactionViewModel
@@ -115,12 +116,20 @@ fun Dashboard(navController: NavHostController, transactionViewModel: Transactio
 
         GoalBox(
             goalFlow = monthGoalViewModel.getCurrentMonthGoal(),
-            savingsFlow = transactionViewModel.getBalance(LocalDate.now(), TransactionAccountType.SAVINGS),
-            investmentFlow = transactionViewModel.getSumForCategory(LocalDate.now(), TransactionCategory.INVESTMENT),
+            savingsFlow = transactionViewModel.getBalance(
+                LocalDate.now(),
+                TransactionAccountType.SAVINGS
+            ),
+            investmentFlow = transactionViewModel.getSumForCategory(
+                LocalDate.now(),
+                TransactionCategory.INVESTMENT
+            ),
             onSaveClick = { updatedGoal ->
                 monthGoalViewModel.setGoal(updatedGoal)
             }
         )
         Spacer(modifier = Modifier.height(40.dp))
+
+        BuyIdeasDashboard()
     }
 }

@@ -1,20 +1,17 @@
 package com.example.finamobileapp.models
 
-import androidx.compose.ui.graphics.Color
+enum class TransactionCategory(val type: TransactionType) {
 
-enum class TransactionCategory(val type: TransactionType, val color: Color) {
+    SALARY(TransactionType.INCOME),
+    PRESENT(TransactionType.INCOME),
+    ALLOWANCE(TransactionType.INCOME),
 
-    SALARY(TransactionType.INCOME, Color(0xFF4CAF50)),
-    PRESENT(TransactionType.INCOME, Color(0xFF8BC34A)),
-    ALLOWANCE(TransactionType.INCOME, Color(0xFFCDDC39)),
-
-
-    SAVINGS(TransactionType.EXPENSE, Color(0xFF2196F3)),
-    FUN(TransactionType.EXPENSE, Color(0xFF9C27B0)),
-    INVESTMENT(TransactionType.EXPENSE, Color(0xFFFFFF00)),
-    FOOD(TransactionType.EXPENSE, Color(0xFFF44336)),
-    RENT(TransactionType.EXPENSE, Color(0xFFFF9800)),
+    SAVINGS(TransactionType.EXPENSE),
+    FUN(TransactionType.EXPENSE),
+    INVESTMENT(TransactionType.EXPENSE),
+    FOOD(TransactionType.EXPENSE),
+    RENT(TransactionType.EXPENSE),
 
 
-    TRANSFER(TransactionType.EXPENSE, Color(0xFF9E9E9E))
+    TRANSFER(TransactionType.EXPENSE)
 }

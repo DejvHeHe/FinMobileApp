@@ -11,7 +11,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.finamobileapp.components.DualGraph
 import com.example.finamobileapp.models.TransactionType
 import com.example.finamobileapp.models.view_model.ArchiveViewModel
 import java.time.LocalDate
@@ -39,8 +38,6 @@ fun ArchiveScreen() {
             text = "Vaše statistiky",
 
             )
-
-        DualGraph(archiveViewModel)
 
 
     }
