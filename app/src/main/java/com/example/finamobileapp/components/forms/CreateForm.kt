@@ -8,21 +8,40 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.finamobileapp.models.TransactionAccountType
 import com.example.finamobileapp.models.Transaction
+import com.example.finamobileapp.models.TransactionAccountType
 import com.example.finamobileapp.models.TransactionCategory
 import com.example.finamobileapp.models.view_model.TransactionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
+fun CreateForm(onDismiss: () -> Unit, viewModel: TransactionViewModel) {
 
     var name by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
@@ -40,7 +59,7 @@ fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
 
     val endDatePickerState = rememberDatePickerState()
     var showEndDatePicker by remember { mutableStateOf(false) }
-    var groupId:String?=null
+    var groupId: String? = null
 
     Card(
         modifier = Modifier
@@ -75,12 +94,14 @@ fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
                 onExpandedChange = { expandedCategory = !expandedCategory }
             ) {
                 OutlinedTextField(
-                    value = selectedOptionCategory ,
+                    value = selectedOptionCategory,
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Kategorie") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategory) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
                 )
                 ExposedDropdownMenu(
                     expanded = expandedCategory,
@@ -89,13 +110,13 @@ fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
                     TransactionCategory.entries.forEach { category ->
 
                         val isSavings = category == TransactionCategory.SAVINGS
-                        val isTransferAndRecurring = isRecurring && category == TransactionCategory.TRANSFER
-                        if (!isSavings && !isTransferAndRecurring)
-                        {
+                        val isTransferAndRecurring =
+                            isRecurring && category == TransactionCategory.TRANSFER
+                        if (!isSavings && !isTransferAndRecurring) {
                             DropdownMenuItem(
                                 text = { Text(category.name) },
                                 onClick = {
-                                    selectedOptionCategory  = category.name
+                                    selectedOptionCategory = category.name
                                     expandedCategory = false
                                 }
                             )
@@ -107,26 +128,28 @@ fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
             }
 
             ExposedDropdownMenuBox(
-                expanded=expandedAccountType,
-                onExpandedChange = {expandedAccountType=!expandedAccountType}
+                expanded = expandedAccountType,
+                onExpandedChange = { expandedAccountType = !expandedAccountType }
             ) {
                 OutlinedTextField(
-                    value = selectedOptionAccType ,
+                    value = selectedOptionAccType,
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Učet ze kterého posílate peníze") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedAccountType) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
                 )
                 ExposedDropdownMenu(
                     expanded = expandedAccountType,
-                    onDismissRequest = {expandedAccountType=false}
+                    onDismissRequest = { expandedAccountType = false }
                 ) {
                     TransactionAccountType.entries.forEach { accountType ->
                         DropdownMenuItem(
                             text = { Text(accountType.name) },
                             onClick = {
-                                selectedOptionAccType  = accountType.name
+                                selectedOptionAccType = accountType.name
                                 expandedAccountType = false
                             }
                         )
@@ -187,8 +210,10 @@ fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
                 onClick = {
 
                     val amountInt = amount.toIntOrNull() ?: 0
-                    val selectedCategoryEnum = TransactionCategory.entries.find { it.name == selectedOptionCategory  }
-                    val selectedAccountTypeEnum=TransactionAccountType.entries.find{it.name==selectedOptionAccType}
+                    val selectedCategoryEnum =
+                        TransactionCategory.entries.find { it.name == selectedOptionCategory }
+                    val selectedAccountTypeEnum =
+                        TransactionAccountType.entries.find { it.name == selectedOptionAccType }
                     val selectedDate = startDatePickerState.selectedDateMillis?.let { millis ->
                         java.time.Instant.ofEpochMilli(millis)
                             .atZone(java.time.ZoneId.systemDefault())
@@ -202,26 +227,29 @@ fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
                     } ?: java.time.LocalDate.now()
 
 
-                    if (name.isNotBlank() && amountInt > 0 && selectedCategoryEnum != null && selectedAccountTypeEnum !=null && !endDate.isBefore(selectedDate)) {
-                        if(isRecurring){groupId=java.util.UUID.randomUUID().toString()}
+                    if (name.isNotBlank() && amountInt > 0 && selectedCategoryEnum != null && selectedAccountTypeEnum != null && !endDate.isBefore(
+                            selectedDate
+                        )
+                    ) {
+                        if (isRecurring) {
+                            groupId = java.util.UUID.randomUUID().toString()
+                        }
                         val newTransaction = Transaction(
                             name = name,
                             amount = amountInt,
-                            type =  selectedCategoryEnum.type,
+                            type = selectedCategoryEnum.type,
                             category = selectedCategoryEnum,
                             accountType = selectedAccountTypeEnum,
                             date = selectedDate,
                             description = description,
                             groupId = groupId
                         )
-                        if(isRecurring)
-                        {
+                        if (isRecurring) {
 
-                            viewModel.addRecurring(newTransaction,endDate)
+                            viewModel.addRecurring(newTransaction, endDate)
 
 
-                        }
-                        else{
+                        } else {
                             viewModel.addTransaction(newTransaction)
 
                         }
@@ -234,10 +262,12 @@ fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
 
                 enabled = name.isNotBlank() &&
                         (amount.toIntOrNull() ?: 0) > 0 &&
-                        selectedOptionCategory  != "Vyber kategorii" && isDateValid,
+                        selectedOptionCategory != "Vyber kategorii" && isDateValid,
 
                 shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black,
                     contentColor = Color.White,
@@ -264,7 +294,7 @@ fun CreateForm(onDismiss: () -> Unit,viewModel: TransactionViewModel) {
         }
     }
 
-    // Dialog pro End Date
+
     if (showEndDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showEndDatePicker = false },

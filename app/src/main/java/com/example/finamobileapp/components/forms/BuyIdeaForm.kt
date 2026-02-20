@@ -1,6 +1,5 @@
 package com.example.finamobileapp.components.forms
 
-
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,19 +25,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.finamobileapp.models.TransactionAccountType
+import com.example.finamobileapp.models.BuyIdeas
 import com.example.finamobileapp.models.TransactionCategory
-
+import com.example.finamobileapp.models.TransactionType
+import com.example.finamobileapp.models.view_model.TransactionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BuyIdeaForm() {
+fun BuyIdeaForm(onDismiss: () -> Unit, viewModel: TransactionViewModel) {
     var name by remember { mutableStateOf("") }
-    var amount by remember { mutableStateOf("") }
+    var price by remember { mutableStateOf("") }
     var expandedCategory by remember { mutableStateOf(false) }
-    var expandedAccountType by remember { mutableStateOf(false) }
     var selectedOptionCategory by remember { mutableStateOf("Vyber kategorii") }
-    var selectedOptionAccType by remember { mutableStateOf("Vyber z ktereho učtu posílaš peníze") }
     var description by remember { mutableStateOf("") }
 
     Card(
@@ -54,7 +52,7 @@ fun BuyIdeaForm() {
                 .padding(24.dp)
                 .fillMaxWidth()
         ) {
-
+            // Jméno
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
@@ -62,16 +60,16 @@ fun BuyIdeaForm() {
                 modifier = Modifier.fillMaxWidth()
             )
 
-
+            // Částka
             OutlinedTextField(
-                value = amount,
-                onValueChange = { amount = it },
+                value = price,
+                onValueChange = { price = it },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Suma") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
 
-
+            // Kategorie
             ExposedDropdownMenuBox(
                 expanded = expandedCategory,
                 onExpandedChange = { expandedCategory = !expandedCategory }
@@ -95,8 +93,8 @@ fun BuyIdeaForm() {
                             DropdownMenuItem(
                                 text = { Text(category.name) },
                                 onClick = {
-                                    /*selectedOptionCategory = category.name
-                                    expandedCategory = false*/
+                                    selectedOptionCategory = category.name
+                                    expandedCategory = false
                                 }
                             )
                         }
@@ -104,38 +102,7 @@ fun BuyIdeaForm() {
                 }
             }
 
-
-            ExposedDropdownMenuBox(
-                expanded = expandedAccountType,
-                onExpandedChange = { expandedAccountType = !expandedAccountType }
-            ) {
-                OutlinedTextField(
-                    value = selectedOptionAccType,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Účet ze kterého posíláte peníze") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedAccountType) },
-                    modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth()
-                )
-                ExposedDropdownMenu(
-                    expanded = expandedAccountType,
-                    onDismissRequest = { expandedAccountType = false }
-                ) {
-                    TransactionAccountType.entries.forEach { accountType ->
-                        DropdownMenuItem(
-                            text = { Text(accountType.name) },
-                            onClick = {
-                                /*selectedOptionAccType = accountType.name
-                                expandedAccountType = false*/
-                            }
-                        )
-                    }
-                }
-            }
-
-
+            // Popis
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
@@ -144,14 +111,26 @@ fun BuyIdeaForm() {
                 minLines = 3
             )
 
-            
+            // Tlačítko Potvrdit
             Button(
                 onClick = {
-                    /* Logika pro uložení transakce s dnešním datem */
-                    /* onDismiss() */
+                    val categoryEnum =
+                        TransactionCategory.entries.find { it.name == selectedOptionCategory }
+                    if (categoryEnum != null) {
+                        viewModel.addBuyIdea(
+                            BuyIdeas(
+                                name = name,
+                                price = price.toIntOrNull() ?: 0,
+                                category = categoryEnum,
+                                type = TransactionType.EXPENSE,
+                                description = description
+                            )
+                        )
+                        onDismiss()
+                    }
                 },
                 enabled = name.isNotBlank() &&
-                        (amount.toIntOrNull() ?: 0) > 0 &&
+                        (price.toIntOrNull() ?: 0) > 0 &&
                         selectedOptionCategory != "Vyber kategorii",
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier

@@ -2,20 +2,28 @@ package com.example.finamobileapp.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,12 +34,14 @@ import com.example.finamobileapp.components.BalanceBox
 import com.example.finamobileapp.components.BuyIdeasDashboard
 import com.example.finamobileapp.components.GoalBox
 import com.example.finamobileapp.components.TypeBox
+import com.example.finamobileapp.components.forms.BuyIdeaForm
 import com.example.finamobileapp.models.TransactionAccountType
 import com.example.finamobileapp.models.TransactionCategory
 import com.example.finamobileapp.models.view_model.MonthlyGoalViewModel
 import com.example.finamobileapp.models.view_model.TransactionViewModel
 import java.time.LocalDate
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Dashboard(navController: NavHostController, transactionViewModel: TransactionViewModel) {
     val monthGoalViewModel: MonthlyGoalViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
@@ -48,6 +58,9 @@ fun Dashboard(navController: NavHostController, transactionViewModel: Transactio
     val currentTypeSum by transactionViewModel
         .getSumyByType(LocalDate.now())
         .collectAsState(initial = emptyMap())
+
+    var showSheetBuyIdea by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Column(
         modifier = Modifier
@@ -130,6 +143,24 @@ fun Dashboard(navController: NavHostController, transactionViewModel: Transactio
         )
         Spacer(modifier = Modifier.height(40.dp))
 
-        BuyIdeasDashboard()
+        BuyIdeasDashboard(onBuyIdeaClick = { showSheetBuyIdea = true })
+    }
+    if (showSheetBuyIdea) {
+        ModalBottomSheet(
+            onDismissRequest = { showSheetBuyIdea = false },
+            sheetState = sheetState,
+            containerColor = Color(0xFFD9D9D9),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = 300.dp)
+            ) {
+                BuyIdeaForm(
+                    onDismiss = { showSheetBuyIdea = false },
+                    viewModel = transactionViewModel
+                )
+            }
+        }
     }
 }

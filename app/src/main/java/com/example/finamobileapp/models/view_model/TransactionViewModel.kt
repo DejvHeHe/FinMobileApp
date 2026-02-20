@@ -3,6 +3,7 @@ package com.example.finamobileapp.models.view_model
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.finamobileapp.models.BuyIdeas
 import com.example.finamobileapp.models.Transaction
 import com.example.finamobileapp.models.TransactionAccountType
 import com.example.finamobileapp.models.TransactionCategory
@@ -95,5 +96,12 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
                 description
             )
         }
+    }
+
+    fun addBuyIdea(buyIdea: BuyIdeas) {
+        viewModelScope.launch(Dispatchers.IO) {
+            buyIdeaRepository.addBuyIdea(buyIdea)
+        }
+
     }
 }
