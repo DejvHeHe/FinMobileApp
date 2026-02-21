@@ -39,7 +39,7 @@ fun TransactionBox(
     transaction: Transaction,
     onDelete: () -> Unit,
     onUpdate: (Transaction) -> Unit,
-    onRecurringDelete:(String)->Unit,
+    onRecurringDelete: (String) -> Unit,
     onRecurringUpdate: (
         groupId: String,
         name: String,
@@ -60,7 +60,7 @@ fun TransactionBox(
             .fillMaxWidth(0.75f)
             .padding(10.dp)
             .combinedClickable(
-                onClick = { isOpen=!isOpen},
+                onClick = { isOpen = !isOpen },
                 onLongClick = { isOptionsOpen = true }
             )
     ) {
@@ -95,14 +95,14 @@ fun TransactionBox(
                 onDelete = onDelete,
                 onUpdate = onUpdate,
                 onRecurringDelete = onRecurringDelete,
-                onRecurringUpdate=onRecurringUpdate
+                onRecurringUpdate = onRecurringUpdate
             )
         }
-        if(isOpen)
-        {
+        if (isOpen) {
             Column(modifier = Modifier.padding(20.dp)) {
                 HorizontalDivider(Modifier.fillMaxWidth())
-                Text(transaction.description) }
+                Text(transaction.description)
+            }
 
 
         }
@@ -192,7 +192,7 @@ fun ShowOptions(
     if (isDeleteFormOpen) {
         DeleteForm(
             onDismiss = { isDeleteFormOpen = false },
-            transaction = transaction,
+            itemName = transaction.name,
             onDelete = {
                 if (isRecurringAction) {
                     onRecurringDelete(transaction.groupId!!)
@@ -227,7 +227,7 @@ fun ShowOptions(
             }
         }
     }
-    if(isUpdateRacurringFromOpen) {
+    if (isUpdateRacurringFromOpen) {
         ModalBottomSheet(
             onDismissRequest = {
                 isUpdateRacurringFromOpen = false

@@ -1,26 +1,23 @@
 package com.example.finamobileapp.components.forms
 
 
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import com.example.finamobileapp.models.Transaction
-
-
-import androidx.compose.material3.AlertDialog
 
 @Composable
 fun DeleteForm(
     onDismiss: () -> Unit,
-    transaction: Transaction,
+    itemName: String,
     onDelete: () -> Unit,
     closeOptions: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Smazat transakci") },
-        text = { Text("Opravdu chcete smazat ${transaction.name}?") },
+        title = { Text("Smazat položku") },
+        text = { Text("Opravdu chcete smazat ${itemName}?") },
         confirmButton = {
             TextButton(onClick = {
                 println("DEBUG: Kliknuto na potvrzení!")
