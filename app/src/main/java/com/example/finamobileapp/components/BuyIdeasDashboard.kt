@@ -18,9 +18,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.finamobileapp.models.BuyIdeas
+import com.example.finamobileapp.models.view_model.TransactionViewModel
 
 @Composable
-fun BuyIdeasDashboard(onBuyIdeaClick: () -> Unit) {
+fun BuyIdeasDashboard(onBuyIdeaClick: () -> Unit,buyIdeas: List<BuyIdeas>,transactionViewModel: TransactionViewModel) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -41,7 +43,10 @@ fun BuyIdeasDashboard(onBuyIdeaClick: () -> Unit) {
                 color = Color.Black
             )
             Spacer(modifier = Modifier.height(16.dp))
-            BuyIdeaBox()
+            buyIdeas.forEach { buyIdea ->
+                BuyIdeaBox(buyIdea,transactionViewModel)
+            }
+
 
 
 

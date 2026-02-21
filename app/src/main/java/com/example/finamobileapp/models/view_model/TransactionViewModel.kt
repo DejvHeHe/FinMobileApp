@@ -104,4 +104,17 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
         }
 
     }
+    fun getBuyIdeas():Flow<List<BuyIdeas>>
+    {
+       return  buyIdeaRepository.allBuyIdeas
+
+    }
+    fun deleteBuyIdea(buyIdea: BuyIdeas)
+    {
+        viewModelScope.launch(Dispatchers.IO) {
+            buyIdeaRepository.deleteBuyIdea(buyIdea)
+        }
+
+    }
+
 }

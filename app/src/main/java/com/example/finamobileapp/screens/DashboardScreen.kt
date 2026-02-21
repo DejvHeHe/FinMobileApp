@@ -51,7 +51,7 @@ fun Dashboard(navController: NavHostController, transactionViewModel: Transactio
         .getBalance(LocalDate.now(), TransactionAccountType.REGULAR)
         .collectAsState(initial = 0)
 
-    val curretntBalanceSavings by transactionViewModel
+    val currentBalanceSavings by transactionViewModel
         .getBalance(LocalDate.now(), TransactionAccountType.SAVINGS)
         .collectAsState(initial = 0)
 
@@ -59,6 +59,9 @@ fun Dashboard(navController: NavHostController, transactionViewModel: Transactio
         .getSumyByType(LocalDate.now())
         .collectAsState(initial = emptyMap())
 
+    val buyIdeas by transactionViewModel
+        .getBuyIdeas()
+        .collectAsState(initial = emptyList())
     var showSheetBuyIdea by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -121,7 +124,7 @@ fun Dashboard(navController: NavHostController, transactionViewModel: Transactio
                     style = MaterialTheme.typography.labelMedium,
                     fontSize = 20.sp
                 )
-                BalanceBox(curretntBalanceSavings)
+                BalanceBox(currentBalanceSavings)
             }
         }
 
@@ -143,7 +146,7 @@ fun Dashboard(navController: NavHostController, transactionViewModel: Transactio
         )
         Spacer(modifier = Modifier.height(40.dp))
 
-        BuyIdeasDashboard(onBuyIdeaClick = { showSheetBuyIdea = true })
+        BuyIdeasDashboard(onBuyIdeaClick = { showSheetBuyIdea = true },buyIdeas,transactionViewModel)
     }
     if (showSheetBuyIdea) {
         ModalBottomSheet(
@@ -163,4 +166,5 @@ fun Dashboard(navController: NavHostController, transactionViewModel: Transactio
             }
         }
     }
+
 }
