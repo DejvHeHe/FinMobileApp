@@ -116,5 +116,14 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
         }
 
     }
+    fun updateBuyIdea(buyIdea: BuyIdeas)
+    {
+        viewModelScope.launch ( Dispatchers.IO )
+        {
+            buyIdeaRepository.updateBuyIdea(buyIdea)
+
+        }
+
+    }
 
 }

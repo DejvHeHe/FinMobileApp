@@ -45,7 +45,7 @@ import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun BuyIdeaBox(buyIdea: BuyIdeas, transactionViewModel: TransactionViewModel) {
+fun BuyIdeaBox(buyIdea: BuyIdeas, transactionViewModel: TransactionViewModel,onSetUpdateMode: () -> Unit,onBuyIdeaClick: () -> Unit,setBuyIdea:(BuyIdeas) -> Unit) {
 
     var isChecked by remember { mutableStateOf(false) }
     var expandedAccountType by remember { mutableStateOf(false) }
@@ -196,7 +196,11 @@ fun BuyIdeaBox(buyIdea: BuyIdeas, transactionViewModel: TransactionViewModel) {
                                 text = "Upravit",
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable {/**/
+                                    .clickable {
+                                        onSetUpdateMode()
+                                        setBuyIdea(buyIdea)
+                                        onBuyIdeaClick()
+
 
                                     }
                                     .padding(12.dp)

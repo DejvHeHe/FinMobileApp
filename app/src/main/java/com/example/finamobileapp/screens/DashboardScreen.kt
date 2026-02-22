@@ -35,6 +35,8 @@ import com.example.finamobileapp.components.BuyIdeasDashboard
 import com.example.finamobileapp.components.GoalBox
 import com.example.finamobileapp.components.TypeBox
 import com.example.finamobileapp.components.forms.BuyIdeaForm
+import com.example.finamobileapp.models.BuyIdeas
+import com.example.finamobileapp.models.FormMode
 import com.example.finamobileapp.models.TransactionAccountType
 import com.example.finamobileapp.models.TransactionCategory
 import com.example.finamobileapp.models.view_model.MonthlyGoalViewModel
@@ -64,6 +66,9 @@ fun Dashboard(navController: NavHostController, transactionViewModel: Transactio
         .collectAsState(initial = emptyList())
     var showSheetBuyIdea by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    var functionBuyIdea by remember {mutableStateOf(FormMode.CREATE)}
+    var currentBuyIdea by remember { mutableStateOf<BuyIdeas?>(null)}
 
     Column(
         modifier = Modifier
@@ -146,7 +151,8 @@ fun Dashboard(navController: NavHostController, transactionViewModel: Transactio
         )
         Spacer(modifier = Modifier.height(40.dp))
 
-        BuyIdeasDashboard(onBuyIdeaClick = { showSheetBuyIdea = true },buyIdeas,transactionViewModel)
+
+        BuyIdeasDashboard(onBuyIdeaClick = { showSheetBuyIdea = true },buyIdeas,transactionViewModel, onSetUpdateMode={functionBuyIdea=FormMode.UPDATE},setBuyIdea= { buyIdea -> currentBuyIdea = buyIdea })
     }
     if (showSheetBuyIdea) {
         ModalBottomSheet(
@@ -159,10 +165,25 @@ fun Dashboard(navController: NavHostController, transactionViewModel: Transactio
                     .fillMaxWidth()
                     .defaultMinSize(minHeight = 300.dp)
             ) {
-                BuyIdeaForm(
-                    onDismiss = { showSheetBuyIdea = false },
-                    viewModel = transactionViewModel
-                )
+                if(functionBuyIdea==FormMode.CREATE)
+                {
+                    BuyIdeaForm(
+                        onDismiss = { showSheetBuyIdea = false },
+                        onSubmit = {idea -> transactionViewModel.addBuyIdea(idea)},
+                        buyIdea=currentBuyIdea
+                    )
+
+                }
+                else{
+                    BuyIdeaForm(
+                        onDismiss = { showSheetBuyIdea = false },
+                        onSubmit = {idea -> transactionViewModel.updateBuyIdea(idea)},
+                        buyIdea=currentBuyIdea
+                    )
+
+
+                }
+
             }
         }
     }

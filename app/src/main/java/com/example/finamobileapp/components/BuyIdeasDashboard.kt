@@ -13,6 +13,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -22,7 +26,8 @@ import com.example.finamobileapp.models.BuyIdeas
 import com.example.finamobileapp.models.view_model.TransactionViewModel
 
 @Composable
-fun BuyIdeasDashboard(onBuyIdeaClick: () -> Unit,buyIdeas: List<BuyIdeas>,transactionViewModel: TransactionViewModel) {
+fun BuyIdeasDashboard(onBuyIdeaClick: () -> Unit,buyIdeas: List<BuyIdeas>,transactionViewModel: TransactionViewModel,onSetUpdateMode: () -> Unit,setBuyIdea:(BuyIdeas) -> Unit) {
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -44,7 +49,8 @@ fun BuyIdeasDashboard(onBuyIdeaClick: () -> Unit,buyIdeas: List<BuyIdeas>,transa
             )
             Spacer(modifier = Modifier.height(16.dp))
             buyIdeas.forEach { buyIdea ->
-                BuyIdeaBox(buyIdea,transactionViewModel)
+
+                BuyIdeaBox(buyIdea,transactionViewModel,onSetUpdateMode,onBuyIdeaClick,setBuyIdea)
             }
 
 

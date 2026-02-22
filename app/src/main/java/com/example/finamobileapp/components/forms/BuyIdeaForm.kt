@@ -32,12 +32,12 @@ import com.example.finamobileapp.models.view_model.TransactionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BuyIdeaForm(onDismiss: () -> Unit, viewModel: TransactionViewModel) {
-    var name by remember { mutableStateOf("") }
-    var price by remember { mutableStateOf("") }
+fun BuyIdeaForm(onDismiss: () -> Unit, onSubmit:(BuyIdeas)->Unit, buyIdea: BuyIdeas?) {
+    var name by remember { mutableStateOf(buyIdea?.name ?: "") }
+    var price by remember { mutableStateOf(buyIdea?.price?.toString() ?: "") }
     var expandedCategory by remember { mutableStateOf(false) }
-    var selectedOptionCategory by remember { mutableStateOf("Vyber kategorii") }
-    var description by remember { mutableStateOf("") }
+    var selectedOptionCategory by remember { mutableStateOf(buyIdea?.category?.name ?: "Vyber kategorii") }
+    var description by remember { mutableStateOf(buyIdea?.description ?:  "") }
 
     Card(
         modifier = Modifier
@@ -117,7 +117,7 @@ fun BuyIdeaForm(onDismiss: () -> Unit, viewModel: TransactionViewModel) {
                     val categoryEnum =
                         TransactionCategory.entries.find { it.name == selectedOptionCategory }
                     if (categoryEnum != null) {
-                        viewModel.addBuyIdea(
+                        onSubmit(
                             BuyIdeas(
                                 name = name,
                                 price = price.toIntOrNull() ?: 0,
