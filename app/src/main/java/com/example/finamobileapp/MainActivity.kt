@@ -22,12 +22,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.finamobileapp.components.Footer
-import com.example.finamobileapp.components.forms.CreateForm
-import com.example.finamobileapp.models.view_model.TransactionViewModel
-import com.example.finamobileapp.screens.ArchiveScreen
-import com.example.finamobileapp.screens.CategoryDetail
-import com.example.finamobileapp.screens.Dashboard
+import com.example.finamobileapp.view.components.Footer
+import com.example.finamobileapp.view.forms.CreateForm
+import com.example.finamobileapp.view_model.DashboardViewModel
+import com.example.finamobileapp.view.screens.ArchiveScreen
+import com.example.finamobileapp.view.screens.CategoryDetail
+import com.example.finamobileapp.view.screens.Dashboard
 
 
 class MainActivity : ComponentActivity() {
@@ -36,7 +36,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val navController = rememberNavController()
-            val transactionViewModel: TransactionViewModel = viewModel()
+            val transactionViewModel: DashboardViewModel = viewModel()
 
             var showSheet by remember { mutableStateOf(false) }
             val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
