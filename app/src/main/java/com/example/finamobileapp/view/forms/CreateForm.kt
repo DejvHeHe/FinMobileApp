@@ -228,7 +228,7 @@ fun CreateForm(onDismiss: () -> Unit, viewModel: DashboardViewModel) {
                         Instant.ofEpochMilli(millis)
                             .atZone(ZoneId.systemDefault())
                             .toLocalDate()
-                    } ?: LocalDate.now()
+                    } ?: LocalDate.now().plusMonths(1)
 
 
                     if (name.isNotBlank() && amountInt > 0 && selectedCategoryEnum != null && selectedAccountTypeEnum != null && !endDate.isBefore(

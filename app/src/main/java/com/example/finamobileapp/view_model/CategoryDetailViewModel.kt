@@ -18,7 +18,7 @@ import java.time.LocalDate
 
 class CategoryDetailViewModel(
     application: Application,
-    private val categoryName: String
+    categoryName: String
 ) : AndroidViewModel(application) {
 
     private val transactionRepository: TransactionRepository
@@ -36,6 +36,20 @@ class CategoryDetailViewModel(
     private val _uiState = MutableStateFlow(CategoryDetailUiState())
     val uiState: StateFlow<CategoryDetailUiState> = _uiState.asStateFlow()
 
+    //Funkce proměných
+    fun setName(name: String) {
+        _uiState.update { it.copy(name = name) }
+    }
+
+    fun setAmount(amount: String) {
+        _uiState.update { it.copy(amount = amount) }
+    }
+
+    fun setDescription(description: String) {
+        _uiState.update { it.copy(description = description) }
+    }
+
+
     //Funkce stavu viditelnosti
 
     fun toggleExpand(transactionId: Long) {
@@ -46,6 +60,15 @@ class CategoryDetailViewModel(
         }
     }
 
+    //    val expandedCategory: Boolean = false,
+//    val showStartDatePicker: Boolean = false,
+    fun toggleExpandCategory() {
+        _uiState.update { it.copy(expandedCategory = !it.expandedCategory) }
+    }
+
+    fun toggleStartDatePicker() {
+        _uiState.update { it.copy(showStartDatePicker = !it.showStartDatePicker) }
+    }
 
     fun openOptions(transaction: Transaction) {
         _uiState.update {
@@ -70,10 +93,15 @@ class CategoryDetailViewModel(
 
     fun openUpdateForm(isRecurring: Boolean) {
         _uiState.update {
+            val transaction = it.selectedTransaction
             it.copy(
                 isUpdateFormOpen = true,
                 isRecurringAction = isRecurring,
-                isOptionsOpen = false
+                isOptionsOpen = false,
+                name = transaction?.name ?: "",
+                amount = transaction?.amount?.toString() ?: "",
+                description = transaction?.description ?: "",
+                selectedOption = transaction?.category?.name ?: ""
             )
         }
     }
