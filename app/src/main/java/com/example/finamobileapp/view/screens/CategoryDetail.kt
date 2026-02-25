@@ -63,10 +63,12 @@ fun CategoryDetail(categoryName: String) {
                             isExpanded = state.expandedTransactionId == item.id,
                             onExpandClick = { viewModel.toggleExpand(item.id) },
                             onLongClick = { viewModel.openOptions(item) }
+
                         )
                     }
                 }
             }
+
 
 
 
@@ -83,7 +85,7 @@ fun CategoryDetail(categoryName: String) {
                     onRecurringDelete = { viewModel.openDeleteForm(true) },
                     onRecurringUpdate = { viewModel.openUpdateForm(true) },
 
-                )
+                    )
             }
 
             if (state.isDeleteFormOpen && state.selectedTransaction != null) {
@@ -108,25 +110,25 @@ fun CategoryDetail(categoryName: String) {
                 ) {
 
                     UpdateForm(
-                        transaction = state.selectedTransaction!!,
-                        onDismiss = { viewModel.closeAllModals() },
-                        onUpdate = { updatedItem ->
-                            if (state.isRecurringAction) {
+                        name = state.name,
+                        amount = state.amount,
+                        description = state.description,
+                        selectedOption = state.selectedOption,
+                        expandedCategory = state.expandedCategory,
+                        showStartDatePicker = state.showStartDatePicker,
+                        selectedDateMillis = state.selectedDateMillis,
+                        isRecurring = state.isRecurringAction,
 
-                                viewModel.updateRecurring(
-                                    groupId = updatedItem.groupId!!,
-                                    name = updatedItem.name,
-                                    amount = updatedItem.amount,
-                                    category = updatedItem.category,
-                                    type = updatedItem.type,
-                                    description = updatedItem.description
-                                )
-                            } else {
+                        onNameChange = viewModel::setName,
+                        onAmountChange = viewModel::setAmount,
+                        onDescriptionChange = viewModel::setDescription,
+                        onCategoryExpand = viewModel::toggleExpandCategory,
+                        onCategorySelect = viewModel::setSelectedOption,
+                        onDatePickerToggle = viewModel::toggleStartDatePicker,
+                        onDateChange = viewModel::setDate,
+                        onSave = viewModel::saveUpdate,
 
-                                viewModel.updateTransaction(updatedItem)
-                            }
-                        }
-                    )
+                        )
 
                     Spacer(modifier = Modifier.height(32.dp))
                 }

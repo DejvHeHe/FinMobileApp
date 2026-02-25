@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.finamobileapp.model.database.TransactionDatabase
 import com.example.finamobileapp.model.entities.Transaction
 import com.example.finamobileapp.model.entities.enums.TransactionCategory
-import com.example.finamobileapp.model.entities.enums.TransactionType
 import com.example.finamobileapp.model.repository.TransactionRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +13,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 
 class CategoryDetailViewModel(
     application: Application,
@@ -49,6 +50,14 @@ class CategoryDetailViewModel(
         _uiState.update { it.copy(description = description) }
     }
 
+    fun setSelectedOption(selectedOption: String) {
+        _uiState.update { it.copy(selectedOption = selectedOption) }
+    }
+
+    fun setDate(millis: Long?) {
+        _uiState.update { it.copy(selectedDateMillis = millis) }
+    }
+
 
     //Funkce stavu viditelnosti
 
@@ -60,8 +69,7 @@ class CategoryDetailViewModel(
         }
     }
 
-    //    val expandedCategory: Boolean = false,
-//    val showStartDatePicker: Boolean = false,
+
     fun toggleExpandCategory() {
         _uiState.update { it.copy(expandedCategory = !it.expandedCategory) }
     }
@@ -119,6 +127,53 @@ class CategoryDetailViewModel(
         }
     }
 
+    //Funkce formulaře update
+    fun saveUpdate() {
+        val state = _uiState.value
+        val original = state.selectedTransaction ?: return
+
+
+        val categoryEnum = TransactionCategory.entries.find { it.name == state.selectedOption }
+            ?: original.category
+
+
+        val selectedDate = state.selectedDateMillis?.let { millis ->
+            Instant.ofEpochMilli(millis)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+        } ?: original.date
+
+
+        val updatedTransaction = original.copy(
+            name = state.name,
+            amount = state.amount.toIntOrNull() ?: original.amount,
+            category = categoryEnum,
+            type = categoryEnum.type,
+            date = selectedDate,
+            description = state.description
+        )
+
+
+        viewModelScope.launch(Dispatchers.IO) {
+            if (state.isRecurringAction && updatedTransaction.groupId != null) {
+                transactionRepository.updateRecurring(
+                    groupId = updatedTransaction.groupId,
+                    name = updatedTransaction.name,
+                    amount = updatedTransaction.amount,
+                    category = updatedTransaction.category,
+                    type = updatedTransaction.type,
+                    description = updatedTransaction.description
+                )
+            } else {
+                transactionRepository.updateTransaction(updatedTransaction)
+            }
+
+            launch(Dispatchers.Main) {
+                closeAllModals()
+            }
+        }
+    }
+
     //Funkce stavu logiky
 
     fun setLoading(isLoading: Boolean) {
@@ -143,11 +198,6 @@ class CategoryDetailViewModel(
 
     }
 
-    fun updateTransaction(transaction: Transaction) {
-        viewModelScope.launch(Dispatchers.IO) {
-            transactionRepository.updateTransaction(transaction)
-        }
-    }
 
     fun deleteRecurring(groupId: String) {
 
@@ -159,18 +209,5 @@ class CategoryDetailViewModel(
         }
     }
 
-    fun updateRecurring(
-        groupId: String,
-        name: String,
-        amount: Int,
-        category: TransactionCategory,
-        type: TransactionType,
-        description: String
-    ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            transactionRepository.updateRecurring(
-                groupId, name, amount, category, type, description
-            )
-        }
-    }
+
 }

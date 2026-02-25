@@ -22,37 +22,38 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.finamobileapp.model.entities.Transaction
 import com.example.finamobileapp.model.entities.enums.TransactionCategory
-import java.time.Instant
-import java.time.ZoneId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UpdateForm(
-    onDismiss: () -> Unit,
-    transaction: Transaction,
-    onUpdate: (Transaction) -> Unit,
+    name: String,
+    amount: String,
+    description: String,
+    selectedOption: String,
+    expandedCategory: Boolean,
+    showStartDatePicker: Boolean,
+    selectedDateMillis: Long?,
+    isRecurring: Boolean, // Přidáno pro logiku zobrazení tlačítka data
+
+    onNameChange: (String) -> Unit,
+    onAmountChange: (String) -> Unit,
+    onDescriptionChange: (String) -> Unit,
+    onCategoryExpand: () -> Unit,
+    onCategorySelect: (String) -> Unit,
+    onDatePickerToggle: () -> Unit,
+    onDateChange: (Long?) -> Unit,
+    onSave: () -> Unit,
 
     ) {
-
-    var name by remember { mutableStateOf(transaction.name) }
-    var amount by remember { mutableStateOf(transaction.amount.toString()) }
-    var expanded by remember { mutableStateOf(false) }
-    var selectedOption by remember { mutableStateOf(transaction.category.name) }
-    var description by remember { mutableStateOf(transaction.description) }
-
-
-    val startDatePickerState = rememberDatePickerState()
-    var showStartDatePicker by remember { mutableStateOf(false) }
+    // Inicializujeme stav pickeru podle dat z ViewModelu
+    val startDatePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = selectedDateMillis
+    )
 
     Card(
         modifier = Modifier
@@ -69,96 +70,67 @@ fun UpdateForm(
         ) {
             OutlinedTextField(
                 value = name,
-                onValueChange = { name = it },
+                onValueChange = onNameChange,
                 label = { Text("Jméno") },
                 modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = amount,
-                onValueChange = { amount = it },
+                onValueChange = onAmountChange,
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Suma") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
 
             ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded }
+                expanded = expandedCategory,
+                onExpandedChange = { onCategoryExpand() }
             ) {
                 OutlinedTextField(
                     value = selectedOption,
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Kategorie") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategory) },
                     modifier = Modifier
                         .menuAnchor()
                         .fillMaxWidth()
                 )
                 ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    expanded = expandedCategory,
+                    onDismissRequest = onCategoryExpand
                 ) {
                     TransactionCategory.entries.forEach { category ->
                         DropdownMenuItem(
                             text = { Text(category.name) },
-                            onClick = {
-                                selectedOption = category.name
-                                expanded = false
-                            }
+                            onClick = { onCategorySelect(category.name) }
                         )
                     }
                 }
             }
-            if (transaction.groupId == null) {
+
+            // Pokud to není opakovaná platba (groupId == null), umožníme změnu data
+            if (!isRecurring) {
                 OutlinedButton(
-                    onClick = { showStartDatePicker = true },
+                    onClick = onDatePickerToggle,
                     modifier = Modifier.padding(top = 8.dp)
                 ) {
                     Text("Změnit datum")
                 }
-
             }
-
-
 
             OutlinedTextField(
                 value = description,
-                onValueChange = { description = it },
+                onValueChange = onDescriptionChange,
                 label = { Text("Popis") },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3
             )
 
             Button(
-                onClick = {
-                    val amountInt = amount.toIntOrNull() ?: 0
-                    val selectedCategoryEnum =
-                        TransactionCategory.entries.find { it.name == selectedOption }
+                onClick = onSave,
 
-                    val selectedDate = startDatePickerState.selectedDateMillis?.let { millis ->
-                        Instant.ofEpochMilli(millis)
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate()
-                    } ?: transaction.date
-
-                    if (name.isNotBlank() && amountInt > 0 && selectedCategoryEnum != null) {
-
-                        val updatedTransaction = transaction.copy(
-                            name = name,
-                            amount = amountInt,
-                            category = selectedCategoryEnum,
-                            type = selectedCategoryEnum.type,
-                            date = selectedDate,
-                            description = description
-                        )
-
-                        onUpdate(updatedTransaction)
-                        onDismiss()
-
-                    }
-                },
                 enabled = name.isNotBlank() && (amount.toIntOrNull() ?: 0) > 0,
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
@@ -173,12 +145,15 @@ fun UpdateForm(
 
     if (showStartDatePicker) {
         DatePickerDialog(
-            onDismissRequest = { showStartDatePicker = false },
+            onDismissRequest = onDatePickerToggle,
             confirmButton = {
-                TextButton(onClick = { showStartDatePicker = false }) { Text("OK") }
+                TextButton(onClick = {
+                    onDateChange(startDatePickerState.selectedDateMillis)
+                    onDatePickerToggle()
+                }) { Text("OK") }
             },
             dismissButton = {
-                TextButton(onClick = { showStartDatePicker = false }) { Text("Zrušit") }
+                TextButton(onClick = onDatePickerToggle) { Text("Zrušit") }
             }
         ) {
             DatePicker(state = startDatePickerState)

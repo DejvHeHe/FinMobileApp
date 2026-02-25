@@ -29,16 +29,7 @@ data class CategoryDetailUiState(
     val amount: String = "",
     val selectedOption: String = "",
     val description: String = "",
-    //val selectedDateMillis: Long?
+    val selectedDateMillis: Long? = null
 
 
-//    var name by remember { mutableStateOf(transaction.name) }
-//var amount by remember { mutableStateOf(transaction.amount.toString()) }
-//var expanded by remember { mutableStateOf(false) }
-//var selectedOption by remember { mutableStateOf(transaction.category.name) }
-//var description by remember { mutableStateOf(transaction.description) }
-//
-//
-
-//var showStartDatePicker by remember { mutableStateOf(false) }
 )
