@@ -17,10 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.finamobileapp.navigation.Screen
 import com.example.finamobileapp.view.components.Footer
 import com.example.finamobileapp.view.forms.CreateForm
 import com.example.finamobileapp.view.screens.ArchiveScreen
@@ -42,7 +45,7 @@ class MainActivity : ComponentActivity() {
             // Navigace
             val navController = rememberNavController()
             val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentRoute = navBackStackEntry?.destination?.route ?: "dashboard"
+            val currentRoute = navBackStackEntry?.destination?.route ?: Screen.Dashboard.route
 
             // ViewModel pro Dashboard/Formulář
             val transactionViewModel: DashboardViewModel = viewModel()
@@ -66,18 +69,28 @@ class MainActivity : ComponentActivity() {
             ) { innerPadding ->
                 NavHost(
                     navController = navController,
-                    startDestination = "dashboard",
+                    startDestination = Screen.Dashboard,
                     modifier = Modifier.padding(innerPadding)
                 ) {
-                    composable("dashboard") {
+                    composable(Screen.Dashboard.route) {
                         Dashboard(navController, transactionViewModel)
                     }
-                    composable("archive") {
+                    composable(Screen.Archive.route) {
                         ArchiveScreen()
                     }
-                    composable("CategoryDetail/{categoryName}") { backStackEntry ->
+                    composable(
+                        route = Screen.CategoryDetail.route, // Použije "category_detail/{categoryName}"
+                        arguments = listOf(
+                            navArgument("categoryName") {
+                                type = NavType.StringType // Definuje, že očekáváme String
+                            }
+                        )
+                    ) { backStackEntry ->
+                        // 1. Vytáhneme hodnotu z argumentů (to, co přišlo v URL)
                         val catName = backStackEntry.arguments?.getString("categoryName") ?: "Unknown"
-                        CategoryDetail(catName)
+
+                        // 2. Předáme ji do tvé Composable funkce
+                        CategoryDetail(categoryName = catName)
                     }
                 }
             }
