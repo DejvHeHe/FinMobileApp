@@ -25,7 +25,6 @@ import com.example.finamobileapp.navigation.Screen
 
 @Composable
 fun Footer(
-    currentRoute: String?,
     onAddClick: () -> Unit,
     onTabSelect: (String) -> Unit
 ) {
@@ -38,7 +37,6 @@ fun Footer(
             // Dashboard
             FooterItem(
                 icon = Icons.Filled.Home,
-                isSelected = currentRoute == "dashboard",
                 onClick = { onTabSelect("dashboard") }
             )
 
@@ -52,7 +50,6 @@ fun Footer(
             // Archive
             FooterItem(
                 icon = Icons.Filled.DateRange,
-                isSelected = currentRoute == "archive",
                 onClick = { onTabSelect("archive") }
             )
         }

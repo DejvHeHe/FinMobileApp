@@ -2,17 +2,15 @@ package com.example.finamobileapp.navigation
 
 import kotlinx.serialization.Serializable
 
-
-sealed class Screen(val route: String) {
+@Serializable
+sealed class Screen() {
     @Serializable
-    object Dashboard : Screen("dashboard")
+    object Dashboard : Screen()
     @Serializable
-    object Archive : Screen("archive")
-
-
+    object Archive : Screen()
     @Serializable
-    object CategoryDetail : Screen("category_detail/{categoryName}") {
-        // Funkce pro volání v kódu (Dashboard -> Detail)
-        fun createRoute(categoryName: String) = "category_detail/$categoryName"
-    }
+    data class CategoryDetail (
+        val categoryName:String
+
+    ): Screen()
 }
