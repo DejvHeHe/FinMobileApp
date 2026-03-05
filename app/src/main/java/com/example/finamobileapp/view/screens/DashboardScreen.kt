@@ -31,23 +31,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.finamobileapp.model.entities.BuyIdeas
+import com.example.finamobileapp.model.entities.enums.FormMode
+import com.example.finamobileapp.model.entities.enums.TransactionAccountType
+import com.example.finamobileapp.model.entities.enums.TransactionCategory
 import com.example.finamobileapp.view.components.BalanceBox
 import com.example.finamobileapp.view.components.BuyIdeasDashboard
 import com.example.finamobileapp.view.components.GoalBox
 import com.example.finamobileapp.view.components.TypeBox
 import com.example.finamobileapp.view.forms.BuyIdeaForm
-import com.example.finamobileapp.model.entities.BuyIdeas
-import com.example.finamobileapp.model.entities.enums.FormMode
-import com.example.finamobileapp.model.entities.enums.TransactionAccountType
-import com.example.finamobileapp.model.entities.enums.TransactionCategory
 import com.example.finamobileapp.view_model.DashboardViewModel
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Dashboard(navController: NavHostController, transactionViewModel: DashboardViewModel) {
+fun Dashboard(navController: NavHostController) {
     val monthGoalViewModel: DashboardViewModel = viewModel()
     val scrollState = rememberScrollState()
+    val transactionViewModel: DashboardViewModel = viewModel()
 
     val currentBalanceRegular by transactionViewModel
         .getBalance(LocalDate.now(), TransactionAccountType.REGULAR)
@@ -67,8 +68,8 @@ fun Dashboard(navController: NavHostController, transactionViewModel: DashboardV
     var showSheetBuyIdea by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    var functionBuyIdea by remember {mutableStateOf(FormMode.CREATE)}
-    var currentBuyIdea by remember { mutableStateOf<BuyIdeas?>(null)}
+    var functionBuyIdea by remember { mutableStateOf(FormMode.CREATE) }
+    var currentBuyIdea by remember { mutableStateOf<BuyIdeas?>(null) }
 
     Column(
         modifier = Modifier
@@ -152,7 +153,12 @@ fun Dashboard(navController: NavHostController, transactionViewModel: DashboardV
         Spacer(modifier = Modifier.height(40.dp))
 
 
-        BuyIdeasDashboard(onBuyIdeaClick = { showSheetBuyIdea = true },buyIdeas,transactionViewModel, onSetUpdateMode={functionBuyIdea=FormMode.UPDATE},setBuyIdea= { buyIdea -> currentBuyIdea = buyIdea })
+        BuyIdeasDashboard(
+            onBuyIdeaClick = { showSheetBuyIdea = true },
+            buyIdeas,
+            transactionViewModel,
+            onSetUpdateMode = { functionBuyIdea = FormMode.UPDATE },
+            setBuyIdea = { buyIdea -> currentBuyIdea = buyIdea })
     }
     if (showSheetBuyIdea) {
         ModalBottomSheet(
@@ -165,20 +171,18 @@ fun Dashboard(navController: NavHostController, transactionViewModel: DashboardV
                     .fillMaxWidth()
                     .defaultMinSize(minHeight = 300.dp)
             ) {
-                if(functionBuyIdea==FormMode.CREATE)
-                {
+                if (functionBuyIdea == FormMode.CREATE) {
                     BuyIdeaForm(
                         onDismiss = { showSheetBuyIdea = false },
-                        onSubmit = {idea -> transactionViewModel.addBuyIdea(idea)},
-                        buyIdea=currentBuyIdea
+                        onSubmit = { idea -> transactionViewModel.addBuyIdea(idea) },
+                        buyIdea = currentBuyIdea
                     )
 
-                }
-                else{
+                } else {
                     BuyIdeaForm(
                         onDismiss = { showSheetBuyIdea = false },
-                        onSubmit = {idea -> transactionViewModel.updateBuyIdea(idea)},
-                        buyIdea=currentBuyIdea
+                        onSubmit = { idea -> transactionViewModel.updateBuyIdea(idea) },
+                        buyIdea = currentBuyIdea
                     )
 
 

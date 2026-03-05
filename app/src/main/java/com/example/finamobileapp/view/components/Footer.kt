@@ -21,12 +21,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hasRoute
 import com.example.finamobileapp.navigation.Screen
 
 @Composable
 fun Footer(
     onAddClick: () -> Unit,
-    onTabSelect: (String) -> Unit
+    currentScreen: NavDestination?,
+    onTabSelect: (Screen) -> Unit
 ) {
     Column {
         HorizontalDivider(thickness = 2.dp, color = Color.Black)
@@ -37,7 +40,8 @@ fun Footer(
             // Dashboard
             FooterItem(
                 icon = Icons.Filled.Home,
-                onClick = { onTabSelect("dashboard") }
+                onClick = { onTabSelect(Screen.Dashboard) },
+                isSelected = currentScreen?.hasRoute<Screen.Dashboard>() == true
             )
 
             // Add Button
@@ -50,7 +54,8 @@ fun Footer(
             // Archive
             FooterItem(
                 icon = Icons.Filled.DateRange,
-                onClick = { onTabSelect("archive") }
+                onClick = { onTabSelect(Screen.Archive) },
+                isSelected = currentScreen?.hasRoute<Screen.Archive>() == true
             )
         }
     }

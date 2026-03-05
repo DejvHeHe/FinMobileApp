@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.finamobileapp.model.entities.enums.TransactionCategory
+import com.example.finamobileapp.navigation.Screen
 
 @Composable
 fun CategoryBox(
@@ -23,7 +24,7 @@ fun CategoryBox(
         modifier = Modifier
             .fillMaxWidth(0.90f)
             .clickable {
-                navController.navigate("CategoryDetail/${name.name}")
+                navController.navigate(Screen.CategoryDetail(categoryName = name.name))
             }
             .padding(8.dp),
         horizontalArrangement = Arrangement.SpaceBetween

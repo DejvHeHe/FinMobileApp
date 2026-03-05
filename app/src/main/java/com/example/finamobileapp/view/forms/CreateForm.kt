@@ -12,6 +12,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
@@ -20,50 +21,33 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.finamobileapp.model.entities.Transaction
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.finamobileapp.model.entities.enums.TransactionAccountType
 import com.example.finamobileapp.model.entities.enums.TransactionCategory
-import com.example.finamobileapp.view_model.DashboardViewModel
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
-import java.util.UUID
+import com.example.finamobileapp.view_model.CreateFormViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateForm(onDismiss: () -> Unit, viewModel: DashboardViewModel) {
+fun CreateForm(onDismiss: () -> Unit) {
 
-    var name by remember { mutableStateOf("") }
-    var amount by remember { mutableStateOf("") }
-    var expandedCategory by remember { mutableStateOf(false) }
-    var expandedAccountType by remember { mutableStateOf(false) }
-    var selectedOptionCategory by remember { mutableStateOf("Vyber kategorii") }
-    var selectedOptionAccType by remember { mutableStateOf("Vyber z ktereho učtu posílaš peníze") }
-    var description by remember { mutableStateOf("") }
-    var isRecurring by remember { mutableStateOf(false) }
+    val viewModel: CreateFormViewModel = viewModel()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-
-    val startDatePickerState = rememberDatePickerState()
-    var showStartDatePicker by remember { mutableStateOf(false) }
-
-
-    val endDatePickerState = rememberDatePickerState()
-    var showEndDatePicker by remember { mutableStateOf(false) }
-    var groupId: String? = null
+    val startDatePickerState =
+        rememberDatePickerState(initialSelectedDateMillis = state.startDateMillis)
+    val endDatePickerState =
+        rememberDatePickerState(initialSelectedDateMillis = state.endDateMillis)
 
     Card(
         modifier = Modifier
@@ -79,101 +63,95 @@ fun CreateForm(onDismiss: () -> Unit, viewModel: DashboardViewModel) {
                 .fillMaxWidth()
         ) {
             OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
+                value = state.name,
+                onValueChange = { viewModel.setName(it) },
                 label = { Text("Jmeno") },
                 modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
-                value = amount,
-                onValueChange = { amount = it },
+                value = state.amount,
+                onValueChange = { viewModel.setAmount(it) },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Suma") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
 
             ExposedDropdownMenuBox(
-                expanded = expandedCategory,
-                onExpandedChange = { expandedCategory = !expandedCategory }
+                expanded = state.isCategoryExpanded,
+                onExpandedChange = { viewModel.toggleCategoryExpand() }
             ) {
                 OutlinedTextField(
-                    value = selectedOptionCategory,
+                    value = state.selectedCategory?.name ?: "",
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Kategorie") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategory) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = state.isCategoryExpanded) },
                     modifier = Modifier
                         .menuAnchor()
                         .fillMaxWidth()
                 )
                 ExposedDropdownMenu(
-                    expanded = expandedCategory,
-                    onDismissRequest = { expandedCategory = false }
+                    expanded = state.isCategoryExpanded,
+                    onDismissRequest = { viewModel.toggleCategoryExpand() }
                 ) {
                     TransactionCategory.entries.forEach { category ->
-
                         val isSavings = category == TransactionCategory.SAVINGS
                         val isTransferAndRecurring =
-                            isRecurring && category == TransactionCategory.TRANSFER
+                            state.isRecurring && category == TransactionCategory.TRANSFER
                         if (!isSavings && !isTransferAndRecurring) {
                             DropdownMenuItem(
                                 text = { Text(category.name) },
                                 onClick = {
-                                    selectedOptionCategory = category.name
-                                    expandedCategory = false
+                                    viewModel.selectCategory(category)
+                                    viewModel.toggleCategoryExpand()
                                 }
                             )
-
                         }
-
                     }
                 }
             }
 
             ExposedDropdownMenuBox(
-                expanded = expandedAccountType,
-                onExpandedChange = { expandedAccountType = !expandedAccountType }
+                expanded = state.isAccountTypeExpanded,
+                onExpandedChange = { viewModel.toggleAccountTypeExpand() }
             ) {
                 OutlinedTextField(
-                    value = selectedOptionAccType,
+                    value = state.selectedAccountType?.name ?: "",
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Učet ze kterého posílate peníze") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedAccountType) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = state.isAccountTypeExpanded) },
                     modifier = Modifier
                         .menuAnchor()
                         .fillMaxWidth()
                 )
                 ExposedDropdownMenu(
-                    expanded = expandedAccountType,
-                    onDismissRequest = { expandedAccountType = false }
+                    expanded = state.isAccountTypeExpanded,
+                    onDismissRequest = { viewModel.toggleAccountTypeExpand() }
                 ) {
                     TransactionAccountType.entries.forEach { accountType ->
                         DropdownMenuItem(
                             text = { Text(accountType.name) },
                             onClick = {
-                                selectedOptionAccType = accountType.name
-                                expandedAccountType = false
+                                viewModel.selectAccountType(accountType)
+                                viewModel.toggleAccountTypeExpand()
                             }
                         )
-
                     }
                 }
-
             }
 
-
             OutlinedButton(
-                onClick = { showStartDatePicker = true },
+                onClick = { viewModel.toggleStartDatePicker() },
                 modifier = Modifier.padding(top = 8.dp)
             ) {
                 Text("Vybrat datum zahájení")
             }
 
             OutlinedTextField(
-                value = description,
-                onValueChange = { description = it },
+                value = state.description,
+                onValueChange = { viewModel.setDescription(it) },
                 label = { Text("Popis") },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3
@@ -183,91 +161,38 @@ fun CreateForm(onDismiss: () -> Unit, viewModel: DashboardViewModel) {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { isRecurring = !isRecurring }
+                    .clickable { viewModel.toggleIsRecurring() }
                     .padding(vertical = 8.dp)
             ) {
-                RadioButton(
-                    selected = isRecurring,
-                    onClick = { isRecurring = !isRecurring }
+                Checkbox(
+                    checked = state.isRecurring,
+                    onCheckedChange = null
                 )
-                Text(text = "Recurring", modifier = Modifier.padding(start = 8.dp))
+                Text(text = "Opakovaná platba", modifier = Modifier.padding(start = 8.dp))
             }
 
-            if (isRecurring) {
+            if (state.isRecurring) {
                 OutlinedButton(
-                    onClick = { showEndDatePicker = true },
+                    onClick = { viewModel.toggleEndDatePicker() },
                     modifier = Modifier.padding(bottom = 8.dp)
                 ) {
                     Text("Vybrat datum konce")
                 }
-
             }
-            val isDateValid = if (isRecurring) {
-                val start = startDatePickerState.selectedDateMillis
-                val end = endDatePickerState.selectedDateMillis
+
+            val isDateValid = if (state.isRecurring) {
+                val start = state.startDateMillis
+                val end = state.endDateMillis
                 start != null && end != null && end >= start
             } else true
 
-
-
             Button(
                 onClick = {
-
-                    val amountInt = amount.toIntOrNull() ?: 0
-                    val selectedCategoryEnum =
-                        TransactionCategory.entries.find { it.name == selectedOptionCategory }
-                    val selectedAccountTypeEnum =
-                        TransactionAccountType.entries.find { it.name == selectedOptionAccType }
-                    val selectedDate = startDatePickerState.selectedDateMillis?.let { millis ->
-                        Instant.ofEpochMilli(millis)
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate()
-                    } ?: LocalDate.now()
-
-                    val endDate = endDatePickerState.selectedDateMillis?.let { millis ->
-                        Instant.ofEpochMilli(millis)
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate()
-                    } ?: LocalDate.now().plusMonths(1)
-
-
-                    if (name.isNotBlank() && amountInt > 0 && selectedCategoryEnum != null && selectedAccountTypeEnum != null && !endDate.isBefore(
-                            selectedDate
-                        )
-                    ) {
-                        if (isRecurring) {
-                            groupId = UUID.randomUUID().toString()
-                        }
-                        val newTransaction = Transaction(
-                            name = name,
-                            amount = amountInt,
-                            type = selectedCategoryEnum.type,
-                            category = selectedCategoryEnum,
-                            accountType = selectedAccountTypeEnum,
-                            date = selectedDate,
-                            description = description,
-                            groupId = groupId
-                        )
-                        if (isRecurring) {
-
-                            viewModel.addRecurring(newTransaction, endDate)
-
-
-                        } else {
-                            viewModel.addTransaction(newTransaction)
-
-                        }
-
-
-
-                        onDismiss()
-                    }
+                    viewModel.onConfirmClicked(onSuccess = onDismiss)
                 },
-
-                enabled = name.isNotBlank() &&
-                        (amount.toIntOrNull() ?: 0) > 0 &&
-                        selectedOptionCategory != "Vyber kategorii" && isDateValid,
-
+                enabled = state.name.isNotBlank() &&
+                        (state.amount.toIntOrNull() ?: 0) > 0 &&
+                        state.selectedCategory != null && isDateValid,
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -283,34 +208,37 @@ fun CreateForm(onDismiss: () -> Unit, viewModel: DashboardViewModel) {
         }
     }
 
-    // Dialog pro Start Date
-    if (showStartDatePicker) {
+    if (state.showStartDatePicker) {
         DatePickerDialog(
-            onDismissRequest = { showStartDatePicker = false },
+            onDismissRequest = { viewModel.toggleStartDatePicker() },
             confirmButton = {
-                TextButton(onClick = { showStartDatePicker = false }) { Text("OK") }
+                TextButton(onClick = {
+                    viewModel.setStartDate(startDatePickerState.selectedDateMillis)
+                    viewModel.toggleStartDatePicker()
+                }) { Text("OK") }
             },
             dismissButton = {
-                TextButton(onClick = { showStartDatePicker = false }) { Text("Zrušit") }
+                TextButton(onClick = { viewModel.toggleStartDatePicker() }) { Text("Zrušit") }
             }
         ) {
             DatePicker(state = startDatePickerState)
         }
     }
 
-
-    if (showEndDatePicker) {
+    if (state.showEndDatePicker) {
         DatePickerDialog(
-            onDismissRequest = { showEndDatePicker = false },
+            onDismissRequest = { viewModel.toggleEndDatePicker() },
             confirmButton = {
-                TextButton(onClick = { showEndDatePicker = false }) { Text("OK") }
+                TextButton(onClick = {
+                    viewModel.setEndDate(endDatePickerState.selectedDateMillis)
+                    viewModel.toggleEndDatePicker()
+                }) { Text("OK") }
             },
             dismissButton = {
-                TextButton(onClick = { showEndDatePicker = false }) { Text("Zrušit") }
+                TextButton(onClick = { viewModel.toggleEndDatePicker() }) { Text("Zrušit") }
             }
         ) {
             DatePicker(state = endDatePickerState)
         }
     }
 }
-

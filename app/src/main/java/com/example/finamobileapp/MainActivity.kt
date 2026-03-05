@@ -1,5 +1,6 @@
 package com.example.finamobileapp
 
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,18 +12,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import androidx.navigation.toRoute
 import com.example.finamobileapp.navigation.Screen
 import com.example.finamobileapp.view.components.Footer
@@ -30,8 +29,6 @@ import com.example.finamobileapp.view.forms.CreateForm
 import com.example.finamobileapp.view.screens.ArchiveScreen
 import com.example.finamobileapp.view.screens.CategoryDetail
 import com.example.finamobileapp.view.screens.Dashboard
-import com.example.finamobileapp.view_model.DashboardViewModel
-// ZDE PŘEDPOKLÁDÁM IMPORT TVÉHO VIEWMODELU
 import com.example.finamobileapp.view_model.MainActivityViewModel
 
 class MainActivity : ComponentActivity() {
@@ -41,24 +38,24 @@ class MainActivity : ComponentActivity() {
         setContent {
             // Použití tvého externího ViewModelu
             val mainVm: MainActivityViewModel = viewModel()
-            val mainState by mainVm.uiState.collectAsState()
+            val mainState by mainVm.uiState.collectAsStateWithLifecycle()
 
             // Navigace
             val navController = rememberNavController()
             val navBackStackEntry by navController.currentBackStackEntryAsState()
+            val currentScreen = navBackStackEntry?.destination
 
 
-            // ViewModel pro Dashboard/Formulář
-            val transactionViewModel: DashboardViewModel = viewModel()
             val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
             Scaffold(
                 bottomBar = {
                     Footer(
                         onAddClick = { mainVm.toggleCreateForm() },
-                        onTabSelect = { route ->
-                            // Vždy čistíme stack, aby se navigace chovala předvídatelně
-                            navController.navigate(route) {
+                        currentScreen = currentScreen,
+                        onTabSelect = { screen ->
+
+                            navController.navigate(screen) {
                                 popUpTo(navController.graph.startDestinationId) { saveState = true }
                                 launchSingleTop = true
                                 restoreState = true
@@ -73,7 +70,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.padding(innerPadding)
                 ) {
                     composable<Screen.Dashboard> {
-                        Dashboard(navController, transactionViewModel)
+                        Dashboard(navController)
                     }
                     composable<Screen.Archive> {
                         ArchiveScreen()
@@ -99,7 +96,6 @@ class MainActivity : ComponentActivity() {
                     ) {
                         CreateForm(
                             onDismiss = { mainVm.toggleCreateForm() },
-                            viewModel = transactionViewModel
                         )
                     }
                 }
