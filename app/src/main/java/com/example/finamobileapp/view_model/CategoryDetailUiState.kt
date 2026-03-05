@@ -24,12 +24,5 @@ data class CategoryDetailUiState(
 
     val isLoading: Boolean = false,
 
-    //Stavy proměných
-    val name: String = "",
-    val amount: String = "",
-    val selectedOption: String = "",
-    val description: String = "",
-    val selectedDateMillis: Long? = null
 
-
-)
+    )

@@ -22,37 +22,30 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.finamobileapp.model.entities.Transaction
 import com.example.finamobileapp.model.entities.enums.TransactionCategory
+import com.example.finamobileapp.view_model.UpdateFormViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UpdateForm(
-    name: String,
-    amount: String,
-    description: String,
-    selectedOption: String,
-    expandedCategory: Boolean,
-    showStartDatePicker: Boolean,
-    selectedDateMillis: Long?,
-    isRecurring: Boolean, // Přidáno pro logiku zobrazení tlačítka data
+    onDismiss: () -> Unit,
+    originalTransaction: Transaction,
+    isRecurringAction: Boolean,
+    viewModel: UpdateFormViewModel = viewModel()
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    onNameChange: (String) -> Unit,
-    onAmountChange: (String) -> Unit,
-    onDescriptionChange: (String) -> Unit,
-    onCategoryExpand: () -> Unit,
-    onCategorySelect: (String) -> Unit,
-    onDatePickerToggle: () -> Unit,
-    onDateChange: (Long?) -> Unit,
-    onSave: () -> Unit,
 
-    ) {
-    // Inicializujeme stav pickeru podle dat z ViewModelu
     val startDatePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = selectedDateMillis
+        initialSelectedDateMillis = state.startDateMillis
     )
 
     Card(
@@ -69,51 +62,55 @@ fun UpdateForm(
                 .fillMaxWidth()
         ) {
             OutlinedTextField(
-                value = name,
-                onValueChange = onNameChange,
+                value = state.name,
+                onValueChange = { viewModel.setName(it) },
                 label = { Text("Jméno") },
                 modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
-                value = amount,
-                onValueChange = onAmountChange,
+                value = state.amount,
+                onValueChange = { viewModel.setAmount(it) },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Suma") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
 
+            // Kategorie
             ExposedDropdownMenuBox(
-                expanded = expandedCategory,
-                onExpandedChange = { onCategoryExpand() }
+                expanded = state.isCategoryExpanded,
+                onExpandedChange = { viewModel.toggleCategoryExpand() }
             ) {
                 OutlinedTextField(
-                    value = selectedOption,
+                    value = state.selectedCategory?.name ?: "",
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Kategorie") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategory) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = state.isCategoryExpanded) },
                     modifier = Modifier
                         .menuAnchor()
                         .fillMaxWidth()
                 )
                 ExposedDropdownMenu(
-                    expanded = expandedCategory,
-                    onDismissRequest = onCategoryExpand
+                    expanded = state.isCategoryExpanded,
+                    onDismissRequest = { viewModel.toggleCategoryExpand() }
                 ) {
                     TransactionCategory.entries.forEach { category ->
                         DropdownMenuItem(
                             text = { Text(category.name) },
-                            onClick = { onCategorySelect(category.name) }
+                            onClick = {
+                                viewModel.setCategory(category)
+                                viewModel.toggleCategoryExpand()
+                            }
                         )
                     }
                 }
             }
 
-            // Pokud to není opakovaná platba (groupId == null), umožníme změnu data
-            if (!isRecurring) {
+
+            if (!state.isRecurring) {
                 OutlinedButton(
-                    onClick = onDatePickerToggle,
+                    onClick = { viewModel.toggleDatePicker() },
                     modifier = Modifier.padding(top = 8.dp)
                 ) {
                     Text("Změnit datum")
@@ -121,17 +118,22 @@ fun UpdateForm(
             }
 
             OutlinedTextField(
-                value = description,
-                onValueChange = onDescriptionChange,
+                value = state.description,
+                onValueChange = { viewModel.setDescription(it) },
                 label = { Text("Popis") },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3
             )
 
             Button(
-                onClick = onSave,
-
-                enabled = name.isNotBlank() && (amount.toIntOrNull() ?: 0) > 0,
+                onClick = {
+                    viewModel.saveUpdate(
+                        original = originalTransaction,
+                        isRecurringAction = isRecurringAction,
+                        onSuccess = onDismiss
+                    )
+                },
+                enabled = state.name.isNotBlank() && (state.amount.toIntOrNull() ?: 0) > 0,
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -143,17 +145,18 @@ fun UpdateForm(
         }
     }
 
-    if (showStartDatePicker) {
+    // DatePicker Dialog
+    if (state.showStartDatePicker) {
         DatePickerDialog(
-            onDismissRequest = onDatePickerToggle,
+            onDismissRequest = { viewModel.toggleDatePicker() },
             confirmButton = {
                 TextButton(onClick = {
-                    onDateChange(startDatePickerState.selectedDateMillis)
-                    onDatePickerToggle()
+                    viewModel.setDate(startDatePickerState.selectedDateMillis)
+                    viewModel.toggleDatePicker()
                 }) { Text("OK") }
             },
             dismissButton = {
-                TextButton(onClick = onDatePickerToggle) { Text("Zrušit") }
+                TextButton(onClick = { viewModel.toggleDatePicker() }) { Text("Zrušit") }
             }
         ) {
             DatePicker(state = startDatePickerState)

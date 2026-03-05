@@ -1,8 +1,10 @@
 package com.example.finamobileapp.view_model
 
+import androidx.compose.runtime.Immutable
 import com.example.finamobileapp.model.entities.enums.TransactionAccountType
 import com.example.finamobileapp.model.entities.enums.TransactionCategory
 
+@Immutable
 data class FormUiState(
     val name: String = "",
     val amount: String = "",

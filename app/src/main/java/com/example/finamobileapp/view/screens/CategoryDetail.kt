@@ -16,7 +16,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +32,7 @@ import com.example.finamobileapp.view.forms.DeleteForm
 import com.example.finamobileapp.view.forms.UpdateForm
 import com.example.finamobileapp.view_model.CategoryDetailViewModel
 import com.example.finamobileapp.view_model.CategoryDetailViewModelFactory
+import com.example.finamobileapp.view_model.UpdateFormViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,6 +44,8 @@ fun CategoryDetail(categoryName: String) {
         )
     )
 
+    // Přidán ViewModel pro update
+    val updateViewModel: UpdateFormViewModel = viewModel()
 
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -69,9 +72,6 @@ fun CategoryDetail(categoryName: String) {
                     }
                 }
             }
-
-
-
 
             if (state.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
@@ -106,30 +106,22 @@ fun CategoryDetail(categoryName: String) {
             if (state.isUpdateFormOpen && state.selectedTransaction != null) {
                 ModalBottomSheet(
                     onDismissRequest = { viewModel.closeAllModals() },
-                    containerColor = Color(0xFFF0F0F0), // Barva pozadí sheetu
+                    containerColor = Color(0xFFF0F0F0),
                     dragHandle = { BottomSheetDefaults.DragHandle() }
                 ) {
+                    // Inicializace dat ve ViewModelu při otevření sheetu
+                    LaunchedEffect(state.selectedTransaction) {
+                        state.selectedTransaction?.let {
+                            updateViewModel.loadTransactionData(it, state.isRecurringAction)
+                        }
+                    }
 
                     UpdateForm(
-                        name = state.name,
-                        amount = state.amount,
-                        description = state.description,
-                        selectedOption = state.selectedOption,
-                        expandedCategory = state.expandedCategory,
-                        showStartDatePicker = state.showStartDatePicker,
-                        selectedDateMillis = state.selectedDateMillis,
-                        isRecurring = state.isRecurringAction,
-
-                        onNameChange = viewModel::setName,
-                        onAmountChange = viewModel::setAmount,
-                        onDescriptionChange = viewModel::setDescription,
-                        onCategoryExpand = viewModel::toggleExpandCategory,
-                        onCategorySelect = viewModel::setSelectedOption,
-                        onDatePickerToggle = viewModel::toggleStartDatePicker,
-                        onDateChange = viewModel::setDate,
-                        onSave = viewModel::saveUpdate,
-
-                        )
+                        onDismiss = { viewModel.closeAllModals() },
+                        originalTransaction = state.selectedTransaction!!,
+                        isRecurringAction = state.isRecurringAction,
+                        viewModel = updateViewModel
+                    )
 
                     Spacer(modifier = Modifier.height(32.dp))
                 }
