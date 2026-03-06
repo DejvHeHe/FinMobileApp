@@ -46,23 +46,23 @@ import java.time.LocalDate
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Dashboard(navController: NavHostController) {
-    val monthGoalViewModel: DashboardViewModel = viewModel()
-    val scrollState = rememberScrollState()
-    val transactionViewModel: DashboardViewModel = viewModel()
 
-    val currentBalanceRegular by transactionViewModel
+    val scrollState = rememberScrollState()
+    val viewModel: DashboardViewModel = viewModel()
+
+    val currentBalanceRegular by viewModel
         .getBalance(LocalDate.now(), TransactionAccountType.REGULAR)
         .collectAsState(initial = 0)
 
-    val currentBalanceSavings by transactionViewModel
+    val currentBalanceSavings by viewModel
         .getBalance(LocalDate.now(), TransactionAccountType.SAVINGS)
         .collectAsState(initial = 0)
 
-    val currentTypeSum by transactionViewModel
+    val currentTypeSum by viewModel
         .getSumyByType(LocalDate.now())
         .collectAsState(initial = emptyMap())
 
-    val buyIdeas by transactionViewModel
+    val buyIdeas by viewModel
         .getBuyIdeas()
         .collectAsState(initial = emptyList())
     var showSheetBuyIdea by remember { mutableStateOf(false) }
@@ -91,7 +91,7 @@ fun Dashboard(navController: NavHostController) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             currentTypeSum.forEach { (type, sum) ->
-                val categories = transactionViewModel.getSumyByCategories(LocalDate.now(), type)
+                val categories = viewModel.getSumyByCategories(LocalDate.now(), type)
                 TypeBox(
                     name = type.name,
                     amount = sum,
@@ -137,17 +137,17 @@ fun Dashboard(navController: NavHostController) {
         Spacer(modifier = Modifier.height(20.dp))
 
         GoalBox(
-            goalFlow = monthGoalViewModel.getCurrentMonthGoal(),
-            savingsFlow = transactionViewModel.getBalance(
+            goalFlow = viewModel.getCurrentMonthGoal(),
+            savingsFlow = viewModel.getBalance(
                 LocalDate.now(),
                 TransactionAccountType.SAVINGS
             ),
-            investmentFlow = transactionViewModel.getSumForCategory(
+            investmentFlow = viewModel.getSumForCategory(
                 LocalDate.now(),
                 TransactionCategory.INVESTMENT
             ),
             onSaveClick = { updatedGoal ->
-                monthGoalViewModel.setGoal(updatedGoal)
+                viewModel.setGoal(updatedGoal)
             }
         )
         Spacer(modifier = Modifier.height(40.dp))
@@ -156,7 +156,7 @@ fun Dashboard(navController: NavHostController) {
         BuyIdeasDashboard(
             onBuyIdeaClick = { showSheetBuyIdea = true },
             buyIdeas,
-            transactionViewModel,
+            viewModel,
             onSetUpdateMode = { functionBuyIdea = FormMode.UPDATE },
             setBuyIdea = { buyIdea -> currentBuyIdea = buyIdea })
     }
@@ -174,14 +174,14 @@ fun Dashboard(navController: NavHostController) {
                 if (functionBuyIdea == FormMode.CREATE) {
                     BuyIdeaForm(
                         onDismiss = { showSheetBuyIdea = false },
-                        onSubmit = { idea -> transactionViewModel.addBuyIdea(idea) },
+                        onSubmit = { idea -> viewModel.addBuyIdea(idea) },
                         buyIdea = currentBuyIdea
                     )
 
                 } else {
                     BuyIdeaForm(
                         onDismiss = { showSheetBuyIdea = false },
-                        onSubmit = { idea -> transactionViewModel.updateBuyIdea(idea) },
+                        onSubmit = { idea -> viewModel.updateBuyIdea(idea) },
                         buyIdea = currentBuyIdea
                     )
 

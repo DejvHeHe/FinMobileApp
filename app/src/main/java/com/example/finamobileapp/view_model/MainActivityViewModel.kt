@@ -2,6 +2,7 @@ package com.example.finamobileapp.view_model
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import com.example.finamobileapp.view_model.uiState.MainUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

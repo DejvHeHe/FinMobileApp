@@ -7,6 +7,7 @@ import com.example.finamobileapp.model.database.TransactionDatabase
 import com.example.finamobileapp.model.entities.Transaction
 import com.example.finamobileapp.model.entities.enums.TransactionCategory
 import com.example.finamobileapp.model.repository.TransactionRepository
+import com.example.finamobileapp.view_model.uiState.FormUiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -1,4 +1,4 @@
-package com.example.finamobileapp.view_model
+package com.example.finamobileapp.view_model.uiState
 
 import androidx.compose.runtime.Immutable
 import com.example.finamobileapp.model.entities.Transaction
