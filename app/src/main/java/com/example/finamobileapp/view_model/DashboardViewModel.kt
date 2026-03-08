@@ -7,6 +7,7 @@ import com.example.finamobileapp.model.database.TransactionDatabase
 import com.example.finamobileapp.model.entities.BuyIdeas
 import com.example.finamobileapp.model.entities.MonthlyGoal
 import com.example.finamobileapp.model.entities.Transaction
+import com.example.finamobileapp.model.entities.enums.FormMode
 import com.example.finamobileapp.model.entities.enums.TransactionAccountType
 import com.example.finamobileapp.model.entities.enums.TransactionCategory
 import com.example.finamobileapp.model.entities.enums.TransactionType
@@ -17,8 +18,12 @@ import com.example.finamobileapp.view_model.uiState.DashboardUiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -26,36 +31,56 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     private val transactionRepository: TransactionRepository
     private val buyIdeaRepository: BuyIdeasRepository
-
     private val monthlyGoalRepository: MonthlyGoalRepository
 
     init {
-        val transactionDao = TransactionDatabase.getDatabase(application).transactionDao()
-        val buyIdeaDao = TransactionDatabase.getDatabase(application).buyIdeaDao()
-        val monthlyGoalDao = TransactionDatabase.getDatabase(application).goalDao()
-        transactionRepository = TransactionRepository(transactionDao)
-        buyIdeaRepository = BuyIdeasRepository(buyIdeaDao)
-        monthlyGoalRepository = MonthlyGoalRepository(monthlyGoalDao)
+        val db = TransactionDatabase.getDatabase(application)
+        transactionRepository = TransactionRepository(db.transactionDao())
+        buyIdeaRepository = BuyIdeasRepository(db.buyIdeaDao())
+        monthlyGoalRepository = MonthlyGoalRepository(db.goalDao())
     }
 
-    private val _uiState = MutableStateFlow(DashboardUiState())
-    val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
+    private val today = LocalDate.now()
+    private val _buyIdeaAction = MutableStateFlow(BuyIdeaAction())
+
+    data class BuyIdeaAction(
+        val isOpen: Boolean = false,
+        val mode: FormMode = FormMode.CREATE,
+        val selectedIdea: BuyIdeas? = null
+    )
+
+    val buyIdeaState: StateFlow<BuyIdeaAction> = _buyIdeaAction.asStateFlow()
+
+    val uiState: StateFlow<DashboardUiState> = combine(
+        combine(
+            transactionRepository.getBalance(today, TransactionAccountType.REGULAR),
+            transactionRepository.getBalance(today, TransactionAccountType.SAVINGS)
+
+        ) { reg, sav -> reg to sav },
+        transactionRepository.getSumyByType(today),
+        buyIdeaRepository.allBuyIdeas,
+        monthlyGoalRepository.getGoalForMonth(today.year, today.monthValue),
+        transactionRepository.getSumForCategory(today, TransactionCategory.INVESTMENT)
+    ) { balances, typeSums, ideas, goal, invested ->
+
+        DashboardUiState(
+            balanceRegular = balances.first,
+            balanceSavings = balances.second,
+            typeSums = typeSums,
+            buyIdeas = ideas,
+            currentGoal = goal,
+            currentlyInvested = invested,
+            isLoading = false
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = DashboardUiState(isLoading = true)
+    )
 
 
-    fun getBalance(date: LocalDate, accountType: TransactionAccountType): Flow<Int> =
-        transactionRepository.getBalance(date, accountType)
-
-    fun getSumyByType(date: LocalDate): Flow<Map<TransactionType, Int>> =
-        transactionRepository.getSumyByType(date)
-
-    fun getSumyByCategories(
-        date: LocalDate,
-        type: TransactionType
-    ): Flow<Map<TransactionCategory, Int>> =
-        transactionRepository.getSumyByCategories(date, type)
-
-    fun getSumForCategory(date: LocalDate, category: TransactionCategory): Flow<Int> =
-        transactionRepository.getSumForCategory(date, category)
+    fun getSumyByCategories(type: TransactionType): Flow<Map<TransactionCategory, Int>> =
+        transactionRepository.getSumyByCategories(today, type)
 
 
     fun addTransaction(transaction: Transaction) {
@@ -64,44 +89,43 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-
     fun addBuyIdea(buyIdea: BuyIdeas) {
         viewModelScope.launch(Dispatchers.IO) {
             buyIdeaRepository.addBuyIdea(buyIdea)
         }
-
-    }
-
-    fun getBuyIdeas(): Flow<List<BuyIdeas>> {
-        return buyIdeaRepository.allBuyIdeas
-
     }
 
     fun deleteBuyIdea(buyIdea: BuyIdeas) {
         viewModelScope.launch(Dispatchers.IO) {
             buyIdeaRepository.deleteBuyIdea(buyIdea)
         }
-
     }
 
     fun updateBuyIdea(buyIdea: BuyIdeas) {
-        viewModelScope.launch(Dispatchers.IO)
-        {
+        viewModelScope.launch(Dispatchers.IO) {
             buyIdeaRepository.updateBuyIdea(buyIdea)
-
         }
-
     }
-
-    fun getCurrentMonthGoal(): Flow<MonthlyGoal?> {
-        val now = LocalDate.now()
-        return monthlyGoalRepository.getGoalForMonth(now.year, now.monthValue)
-    }
-
 
     fun setGoal(goal: MonthlyGoal) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             monthlyGoalRepository.setGoal(goal)
+        }
+    }
+
+    fun setBuyIdeaSheet(isOpen: Boolean) {
+        _buyIdeaAction.update { it.copy(isOpen = isOpen) }
+    }
+
+    fun prepareUpdate(idea: BuyIdeas) {
+        _buyIdeaAction.update {
+            it.copy(selectedIdea = idea, mode = FormMode.UPDATE, isOpen = true)
+        }
+    }
+
+    fun prepareCreate() {
+        _buyIdeaAction.update {
+            it.copy(selectedIdea = null, mode = FormMode.CREATE, isOpen = true)
         }
     }
 

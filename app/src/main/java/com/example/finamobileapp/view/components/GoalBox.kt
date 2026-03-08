@@ -13,7 +13,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,29 +24,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.finamobileapp.model.entities.MonthlyGoal
-import kotlinx.coroutines.flow.Flow
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import java.time.LocalDate
 
 @Composable
 fun GoalBox(
-    goalFlow: Flow<MonthlyGoal?>,
-    savingsFlow: Flow<Int>,
-    investmentFlow: Flow<Int>,
+    currentGoal: MonthlyGoal? = null,
+    savings: Int,
+    investment: Int,
     onSaveClick: (MonthlyGoal) -> Unit
 ) {
-    val goal by goalFlow.collectAsState(initial = null)
-    val currentSavings by savingsFlow.collectAsState(initial = 0)
-    val currentInvestment by investmentFlow.collectAsState(initial = 0)
+
 
     var isEditOpen by remember { mutableStateOf(false) }
 
 
-    var savingGoalInput by remember(goal) { mutableStateOf(goal?.savingsGoal?.toString() ?: "") }
-    var investmentGoalInput by remember(goal) { mutableStateOf(goal?.investmentGoal?.toString() ?: "") }
+    var savingGoalInput by remember(currentGoal) {
+        mutableStateOf(
+            currentGoal?.savingsGoal?.toString() ?: ""
+        )
+    }
+    var investmentGoalInput by remember(currentGoal) {
+        mutableStateOf(
+            currentGoal?.investmentGoal?.toString() ?: ""
+        )
+    }
 
     Card(
         modifier = Modifier
@@ -54,7 +58,9 @@ fun GoalBox(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
@@ -64,8 +70,8 @@ fun GoalBox(
             )
 
 
-            GoalStatusRow("Spoření:", currentSavings, goal?.savingsGoal ?: 0)
-            GoalStatusRow("Investice:", currentInvestment, goal?.investmentGoal ?: 0)
+            GoalStatusRow("Spoření:", savings, currentGoal?.savingsGoal ?: 0)
+            GoalStatusRow("Investice:", investment, currentGoal?.investmentGoal ?: 0)
 
             TextButton(
                 onClick = { isEditOpen = !isEditOpen },
@@ -91,7 +97,7 @@ fun GoalBox(
                         singleLine = true
                     )
 
-                    // TextField pro Investice
+
                     TextField(
                         value = investmentGoalInput,
                         onValueChange = { newValue ->
@@ -107,7 +113,14 @@ fun GoalBox(
                         onClick = {
                             val sGoal = savingGoalInput.toIntOrNull() ?: 0
                             val iGoal = investmentGoalInput.toIntOrNull() ?: 0
-                            onSaveClick(MonthlyGoal(year= LocalDate.now().year,month=LocalDate.now().month.value,sGoal,iGoal))
+                            onSaveClick(
+                                MonthlyGoal(
+                                    year = LocalDate.now().year,
+                                    month = LocalDate.now().month.value,
+                                    sGoal,
+                                    iGoal
+                                )
+                            )
                             isEditOpen = false
                         },
                         modifier = Modifier.align(Alignment.CenterHorizontally)

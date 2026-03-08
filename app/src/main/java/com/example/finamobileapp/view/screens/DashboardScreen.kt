@@ -21,27 +21,21 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.finamobileapp.model.entities.BuyIdeas
 import com.example.finamobileapp.model.entities.enums.FormMode
-import com.example.finamobileapp.model.entities.enums.TransactionAccountType
-import com.example.finamobileapp.model.entities.enums.TransactionCategory
 import com.example.finamobileapp.view.components.BalanceBox
 import com.example.finamobileapp.view.components.BuyIdeasDashboard
 import com.example.finamobileapp.view.components.GoalBox
 import com.example.finamobileapp.view.components.TypeBox
 import com.example.finamobileapp.view.forms.BuyIdeaForm
 import com.example.finamobileapp.view_model.DashboardViewModel
-import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,27 +43,13 @@ fun Dashboard(navController: NavHostController) {
 
     val scrollState = rememberScrollState()
     val viewModel: DashboardViewModel = viewModel()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val buyIdeaState by viewModel.buyIdeaState.collectAsState()
 
-    val currentBalanceRegular by viewModel
-        .getBalance(LocalDate.now(), TransactionAccountType.REGULAR)
-        .collectAsState(initial = 0)
 
-    val currentBalanceSavings by viewModel
-        .getBalance(LocalDate.now(), TransactionAccountType.SAVINGS)
-        .collectAsState(initial = 0)
-
-    val currentTypeSum by viewModel
-        .getSumyByType(LocalDate.now())
-        .collectAsState(initial = emptyMap())
-
-    val buyIdeas by viewModel
-        .getBuyIdeas()
-        .collectAsState(initial = emptyList())
-    var showSheetBuyIdea by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    var functionBuyIdea by remember { mutableStateOf(FormMode.CREATE) }
-    var currentBuyIdea by remember { mutableStateOf<BuyIdeas?>(null) }
+
 
     Column(
         modifier = Modifier
@@ -90,8 +70,8 @@ fun Dashboard(navController: NavHostController) {
             modifier = Modifier.fillMaxWidth(0.85f),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            currentTypeSum.forEach { (type, sum) ->
-                val categories = viewModel.getSumyByCategories(LocalDate.now(), type)
+            state.typeSums.forEach { (type, sum) ->
+                val categories = viewModel.getSumyByCategories(type)
                 TypeBox(
                     name = type.name,
                     amount = sum,
@@ -118,7 +98,7 @@ fun Dashboard(navController: NavHostController) {
                     style = MaterialTheme.typography.labelMedium,
                     fontSize = 20.sp
                 )
-                BalanceBox(currentBalanceRegular)
+                BalanceBox(state.balanceRegular)
             }
 
             Column(
@@ -130,22 +110,16 @@ fun Dashboard(navController: NavHostController) {
                     style = MaterialTheme.typography.labelMedium,
                     fontSize = 20.sp
                 )
-                BalanceBox(currentBalanceSavings)
+                BalanceBox(state.balanceSavings)
             }
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
         GoalBox(
-            goalFlow = viewModel.getCurrentMonthGoal(),
-            savingsFlow = viewModel.getBalance(
-                LocalDate.now(),
-                TransactionAccountType.SAVINGS
-            ),
-            investmentFlow = viewModel.getSumForCategory(
-                LocalDate.now(),
-                TransactionCategory.INVESTMENT
-            ),
+            state.currentGoal,
+            state.balanceSavings,
+            state.currentlyInvested,
             onSaveClick = { updatedGoal ->
                 viewModel.setGoal(updatedGoal)
             }
@@ -154,15 +128,16 @@ fun Dashboard(navController: NavHostController) {
 
 
         BuyIdeasDashboard(
-            onBuyIdeaClick = { showSheetBuyIdea = true },
-            buyIdeas,
-            viewModel,
-            onSetUpdateMode = { functionBuyIdea = FormMode.UPDATE },
-            setBuyIdea = { buyIdea -> currentBuyIdea = buyIdea })
+            onBuyIdeaClick = { viewModel.prepareCreate() },
+            buyIdeas = state.buyIdeas,
+            transactionViewModel = viewModel,
+            onSetUpdateMode = { /* Tady nemusíš dělat nic, nebo jen logovat */ },
+            setBuyIdea = { idea -> viewModel.prepareUpdate(idea) }
+        )
     }
-    if (showSheetBuyIdea) {
+    if (buyIdeaState.isOpen) {
         ModalBottomSheet(
-            onDismissRequest = { showSheetBuyIdea = false },
+            onDismissRequest = { viewModel.setBuyIdeaSheet(false) },
             sheetState = sheetState,
             containerColor = Color(0xFFD9D9D9),
         ) {
@@ -171,18 +146,18 @@ fun Dashboard(navController: NavHostController) {
                     .fillMaxWidth()
                     .defaultMinSize(minHeight = 300.dp)
             ) {
-                if (functionBuyIdea == FormMode.CREATE) {
+                if (buyIdeaState.mode == FormMode.CREATE) {
                     BuyIdeaForm(
-                        onDismiss = { showSheetBuyIdea = false },
+                        onDismiss = { viewModel.setBuyIdeaSheet(false) },
                         onSubmit = { idea -> viewModel.addBuyIdea(idea) },
-                        buyIdea = currentBuyIdea
+                        buyIdea = buyIdeaState.selectedIdea
                     )
 
                 } else {
                     BuyIdeaForm(
-                        onDismiss = { showSheetBuyIdea = false },
+                        onDismiss = { viewModel.setBuyIdeaSheet(false) },
                         onSubmit = { idea -> viewModel.updateBuyIdea(idea) },
-                        buyIdea = currentBuyIdea
+                        buyIdea = buyIdeaState.selectedIdea
                     )
 
 
