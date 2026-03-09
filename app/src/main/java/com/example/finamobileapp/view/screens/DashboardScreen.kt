@@ -1,5 +1,6 @@
 package com.example.finamobileapp.view.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,7 +20,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,7 +44,7 @@ fun Dashboard(navController: NavHostController) {
     val scrollState = rememberScrollState()
     val viewModel: DashboardViewModel = viewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val buyIdeaState by viewModel.buyIdeaState.collectAsState()
+    val buyIdeaState by viewModel.buyIdeaState.collectAsStateWithLifecycle()
 
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -131,11 +131,13 @@ fun Dashboard(navController: NavHostController) {
             onBuyIdeaClick = { viewModel.prepareCreate() },
             buyIdeas = state.buyIdeas,
             transactionViewModel = viewModel,
-            onSetUpdateMode = { /* Tady nemusíš dělat nic, nebo jen logovat */ },
             setBuyIdea = { idea -> viewModel.prepareUpdate(idea) }
         )
     }
     if (buyIdeaState.isOpen) {
+        Log.d("DashboardVM", "VYBRANÝ BUYiDEA: ${buyIdeaState.selectedIdea}")
+        Log.d("DashboardVM", "VYBRANÁ FORMA: ${buyIdeaState.mode}")
+
         ModalBottomSheet(
             onDismissRequest = { viewModel.setBuyIdeaSheet(false) },
             sheetState = sheetState,
@@ -154,6 +156,7 @@ fun Dashboard(navController: NavHostController) {
                     )
 
                 } else {
+
                     BuyIdeaForm(
                         onDismiss = { viewModel.setBuyIdeaSheet(false) },
                         onSubmit = { idea -> viewModel.updateBuyIdea(idea) },

@@ -36,16 +36,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
-import com.example.finamobileapp.view.forms.DeleteForm
 import com.example.finamobileapp.model.entities.BuyIdeas
 import com.example.finamobileapp.model.entities.Transaction
 import com.example.finamobileapp.model.entities.enums.TransactionAccountType
+import com.example.finamobileapp.view.forms.DeleteForm
 import com.example.finamobileapp.view_model.DashboardViewModel
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun BuyIdeaBox(buyIdea: BuyIdeas, transactionViewModel: DashboardViewModel, onSetUpdateMode: () -> Unit, onBuyIdeaClick: () -> Unit, setBuyIdea:(BuyIdeas) -> Unit) {
+fun BuyIdeaBox(
+    buyIdea: BuyIdeas,
+    transactionViewModel: DashboardViewModel,
+    setBuyIdea: (BuyIdeas) -> Unit
+) {
 
     var isChecked by remember { mutableStateOf(false) }
     var expandedAccountType by remember { mutableStateOf(false) }
@@ -197,9 +201,7 @@ fun BuyIdeaBox(buyIdea: BuyIdeas, transactionViewModel: DashboardViewModel, onSe
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
-                                        onSetUpdateMode()
                                         setBuyIdea(buyIdea)
-                                        onBuyIdeaClick()
 
 
                                     }

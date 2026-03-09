@@ -22,7 +22,12 @@ import com.example.finamobileapp.model.entities.BuyIdeas
 import com.example.finamobileapp.view_model.DashboardViewModel
 
 @Composable
-fun BuyIdeasDashboard(onBuyIdeaClick: () -> Unit, buyIdeas: List<BuyIdeas>, transactionViewModel: DashboardViewModel, onSetUpdateMode: () -> Unit, setBuyIdea:(BuyIdeas) -> Unit) {
+fun BuyIdeasDashboard(
+    onBuyIdeaClick: () -> Unit,
+    buyIdeas: List<BuyIdeas>,
+    transactionViewModel: DashboardViewModel,
+    setBuyIdea: (BuyIdeas) -> Unit
+) {
 
     Card(
         modifier = Modifier
@@ -46,7 +51,7 @@ fun BuyIdeasDashboard(onBuyIdeaClick: () -> Unit, buyIdeas: List<BuyIdeas>, tran
             Spacer(modifier = Modifier.height(16.dp))
             buyIdeas.forEach { buyIdea ->
 
-                BuyIdeaBox(buyIdea,transactionViewModel,onSetUpdateMode,onBuyIdeaClick,setBuyIdea)
+                BuyIdeaBox(buyIdea, transactionViewModel, setBuyIdea)
             }
 
 
