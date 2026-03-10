@@ -45,6 +45,7 @@ fun Dashboard(navController: NavHostController) {
     val viewModel: DashboardViewModel = viewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val buyIdeaState by viewModel.buyIdeaState.collectAsStateWithLifecycle()
+    val buyIdeaUisState by viewModel.buyIdeaUiState.collectAsStateWithLifecycle()
 
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -130,8 +131,10 @@ fun Dashboard(navController: NavHostController) {
         BuyIdeasDashboard(
             onBuyIdeaClick = { viewModel.prepareCreate() },
             buyIdeas = state.buyIdeas,
-            transactionViewModel = viewModel,
-            setBuyIdea = { idea -> viewModel.prepareUpdate(idea) }
+            addTransaction={viewModel.addTransaction(transaction)},
+            deleteBuyIdea={viewModel.deleteBuyIdea(buyIdea)},
+            setBuyIdea = { idea -> viewModel.prepareUpdate(idea) },
+            buyIdeaUiState=buyIdeaUisState
         )
     }
     if (buyIdeaState.isOpen) {

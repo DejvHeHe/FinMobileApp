@@ -20,13 +20,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.finamobileapp.model.entities.BuyIdeas
 import com.example.finamobileapp.view_model.DashboardViewModel
+import com.example.finamobileapp.model.entities.Transaction
+import com.example.finamobileapp.view_model.uiState.BuyIdeaUiState
 
 @Composable
 fun BuyIdeasDashboard(
     onBuyIdeaClick: () -> Unit,
     buyIdeas: List<BuyIdeas>,
-    transactionViewModel: DashboardViewModel,
-    setBuyIdea: (BuyIdeas) -> Unit
+    addTransaction: (Transaction)-> Unit,
+    deleteBuyIdea: (BuyIdeas)-> Unit,
+    setBuyIdea: (BuyIdeas) -> Unit,
+    buyIdeaUiState: BuyIdeaUiState
 ) {
 
     Card(
@@ -51,7 +55,7 @@ fun BuyIdeasDashboard(
             Spacer(modifier = Modifier.height(16.dp))
             buyIdeas.forEach { buyIdea ->
 
-                BuyIdeaBox(buyIdea, transactionViewModel, setBuyIdea)
+                BuyIdeaBox(buyIdea, addTransaction,deleteBuyIdea, setBuyIdea,buyIdeaUiState)
             }
 
 

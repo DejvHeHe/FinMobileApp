@@ -41,21 +41,20 @@ import com.example.finamobileapp.model.entities.Transaction
 import com.example.finamobileapp.model.entities.enums.TransactionAccountType
 import com.example.finamobileapp.view.forms.DeleteForm
 import com.example.finamobileapp.view_model.DashboardViewModel
+import com.example.finamobileapp.view_model.uiState.BuyIdeaUiState
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun BuyIdeaBox(
     buyIdea: BuyIdeas,
-    transactionViewModel: DashboardViewModel,
-    setBuyIdea: (BuyIdeas) -> Unit
+    addTransaction: (Transaction)-> Unit,
+    deleteBuyIdea: (BuyIdeas)-> Unit,
+    setBuyIdea: (BuyIdeas) -> Unit,
+    buyIdeaUiState: BuyIdeaUiState
 ) {
 
-    var isChecked by remember { mutableStateOf(false) }
-    var expandedAccountType by remember { mutableStateOf(false) }
-    var selectedOptionAccType by remember { mutableStateOf("Vyber účet") }
-    var isOptionOpen by remember { mutableStateOf(false) }
-    var isDeleteFormOpen by remember { mutableStateOf(false) }
+
 
 
     Card(

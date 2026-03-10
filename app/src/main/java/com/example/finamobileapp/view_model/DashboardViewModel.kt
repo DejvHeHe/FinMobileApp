@@ -1,5 +1,6 @@
 package com.example.finamobileapp.view_model
 
+
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,6 +15,8 @@ import com.example.finamobileapp.model.entities.enums.TransactionType
 import com.example.finamobileapp.model.repository.BuyIdeasRepository
 import com.example.finamobileapp.model.repository.MonthlyGoalRepository
 import com.example.finamobileapp.model.repository.TransactionRepository
+import com.example.finamobileapp.view_model.interfaces.BuyIdeaActions
+import com.example.finamobileapp.view_model.uiState.BuyIdeaUiState
 import com.example.finamobileapp.view_model.uiState.DashboardUiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -41,15 +44,14 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     private val today = LocalDate.now()
-    private val _buyIdeaAction = MutableStateFlow(BuyIdeaAction())
+   
 
-    data class BuyIdeaAction(
-        val isOpen: Boolean = false,
-        val mode: FormMode = FormMode.CREATE,
-        val selectedIdea: BuyIdeas? = null
-    )
+    private val _buyIdeaUiState=MutableStateFlow(BuyIdeaUiState())
+    
 
-    val buyIdeaState: StateFlow<BuyIdeaAction> = _buyIdeaAction.asStateFlow()
+    
+    val buyIdeaUiState: StateFlow<BuyIdeaUiState> =_buyIdeaUiState.asStateFlow()
+
 
     val uiState: StateFlow<DashboardUiState> = combine(
         combine(
@@ -83,7 +85,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         transactionRepository.getSumyByCategories(today, type)
 
 
-    fun addTransaction(transaction: Transaction) {
+    override fun addTransaction(transaction: Transaction) {
         viewModelScope.launch(Dispatchers.IO) {
             transactionRepository.addSmartTransaction(transaction)
         }
@@ -95,7 +97,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    fun deleteBuyIdea(buyIdea: BuyIdeas) {
+    override fun deleteBuyIdea(buyIdea: BuyIdeas) {
         viewModelScope.launch(Dispatchers.IO) {
             buyIdeaRepository.deleteBuyIdea(buyIdea)
         }
@@ -114,20 +116,76 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun setBuyIdeaSheet(isOpen: Boolean) {
-        _buyIdeaAction.update { it.copy(isOpen = isOpen) }
+        _buyIdeaUiState.update { it.copy(isOpen = isOpen) }
     }
 
     fun prepareUpdate(idea: BuyIdeas) {
-        _buyIdeaAction.update {
+        _buyIdeaUiState.update {
             it.copy(selectedIdea = idea, mode = FormMode.UPDATE, isOpen = true)
         }
     }
 
     fun prepareCreate() {
-        _buyIdeaAction.update {
+        _buyIdeaUiState.update {
             it.copy(selectedIdea = null, mode = FormMode.CREATE, isOpen = true)
         }
     }
+
+    fun onBuyIdeaAction(action: BuyIdeaActions){
+        when(action){
+            is BuyIdeaActions.AddTransaction -> TODO()
+            is BuyIdeaActions.DeleteBuyIdea -> TODO()
+            is BuyIdeaActions.SelectAccTypeOption -> TODO()
+            is BuyIdeaActions.SetBuyIdea -> TODO()
+            is BuyIdeaActions.ToggleDeleteForm -> TODO()
+            is BuyIdeaActions.ToggleExpandAccountType -> TODO()
+            is BuyIdeaActions.ToggleIsChecked -> toggleIsChecked(action.id)
+            is BuyIdeaActions.ToggleOption -> TODO()
+        }
+    }
+
+
+
+     fun toggleIsChecked(id: Long) {
+        _buyIdeaUiState.update { state ->
+            val newChecked = if (state.isChecked.contains(id)) {
+                state.isChecked - id
+            } else {
+                state.isChecked + id
+            }
+            state.copy(isChecked = newChecked)
+        }
+    }
+
+    override fun toggleExpandAccountType(id: Long) {
+        _buyIdeaUiState.update { state ->
+            val newExpanded = if (state.expandedAccountType.contains(id)) {
+                state.expandedAccountType - id
+            } else {
+                state.expandedAccountType + id
+            }
+            state.copy(expandedAccountType = newExpanded)
+        }
+    }
+
+    override fun selectAccTypeOption(id: Long, accountType: TransactionAccountType) {
+        _buyIdeaUiState.update { state ->
+            state.copy(selectedOptionAccType = state.selectedOptionAccType + (id to accountType))
+        }
+    }
+
+    override fun toggleOption(id: Long) {
+        _buyIdeaUiState.update { state ->
+            state.copy(isOptionOpen = if (state.isOptionOpen == id) null else id)
+        }
+    }
+
+    override fun toggleDeleteForm(id: Long?) {
+        _buyIdeaUiState.update {
+            it.copy(isDeleteFormOpen = id)
+        }
+    }
+
 
 
 }
