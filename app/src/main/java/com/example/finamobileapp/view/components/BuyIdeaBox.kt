@@ -22,6 +22,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -63,7 +64,7 @@ fun BuyIdeaBox(
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .combinedClickable(
                 onClick = {/**/ },
-                onLongClick = { isOptionOpen = !isOptionOpen }
+                onLongClick = { BuyIdeaActions.ToggleOption(buyIdea.id)}
             ),
         shape = RoundedCornerShape(12.dp),
         border = BorderStroke(1.dp, Color.Black),
@@ -79,7 +80,7 @@ fun BuyIdeaBox(
             ) {
                 Checkbox(
                     checked = buyIdeaUiState.isChecked.contains(buyIdea.id),
-                    onCheckedChange = { isChecked = it }
+                    onCheckedChange = { BuyIdeaActions.ToggleIsChecked(buyIdea.id) }
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -119,33 +120,34 @@ fun BuyIdeaBox(
                         .padding(start = 12.dp, end = 12.dp, bottom = 12.dp)
                         .fillMaxWidth()
                 ) {
-                    Divider(modifier = Modifier.padding(bottom = 12.dp), color = Color.Gray)
+                    HorizontalDivider(modifier = Modifier.padding(bottom = 12.dp), color = Color.Gray)
 
                     ExposedDropdownMenuBox(
-                        expanded = expandedAccountType,
-                        onExpandedChange = { expandedAccountType = !expandedAccountType },
+                        expanded = buyIdeaUiState.expandedAccountType.contains(buyIdea.id),
+                        onExpandedChange = { BuyIdeaActions.ToggleExpandAccountType(buyIdea.id) },
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         OutlinedTextField(
-                            value = selectedOptionAccType,
+                            value = buyIdeaUiState.selectedOptionAccType[buyIdea.id]?.name ?: "Vyber účet",
                             onValueChange = {},
                             readOnly = true,
                             label = { Text("Z jakého účtu?") },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedAccountType) },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = buyIdeaUiState.expandedAccountType.contains(buyIdea.id)) },
                             modifier = Modifier
                                 .menuAnchor()
                                 .fillMaxWidth()
                         )
                         ExposedDropdownMenu(
-                            expanded = expandedAccountType,
-                            onDismissRequest = { expandedAccountType = false }
+                            expanded = buyIdeaUiState.expandedAccountType.contains(buyIdea.id),
+                            onDismissRequest = { BuyIdeaActions.ToggleExpandAccountType(buyIdea.id) }
                         ) {
                             TransactionAccountType.entries.forEach { accountType ->
                                 DropdownMenuItem(
                                     text = { Text(accountType.name) },
                                     onClick = {
-                                        selectedOptionAccType = accountType.name
-                                        expandedAccountType = false
+                                        BuyIdeaActions.SelectAccTypeOption(buyIdea.id,accountType)
+                                        BuyIdeaActions.ToggleExpandAccountType(buyIdea.id)
+
                                     }
                                 )
                             }
@@ -171,10 +173,10 @@ fun BuyIdeaBox(
                                         groupId = null
                                     )
                                 )
-                                transactionViewModel.deleteBuyIdea(buyIdea)
+                                BuyIdeaActions.DeleteBuyIdea(buyIdea)
                             }
                         },
-                        enabled = selectedOptionAccType != "Vyber účet",
+                        enabled = !buyIdeaUiState.selectedOptionAccType.isEmpty(),
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
                     ) {
@@ -183,7 +185,7 @@ fun BuyIdeaBox(
                 }
             }
             if (buyIdeaUiState.isOpen) {
-                Popup(onDismissRequest = { isOptionOpen = false }) {
+                Popup(onDismissRequest = { BuyIdeaActions.ToggleOption(buyIdea.id) }) {
                     Card(
                         modifier = Modifier
                             .padding(10.dp)
@@ -210,7 +212,7 @@ fun BuyIdeaBox(
                                 text = "Smazat",
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { isDeleteFormOpen = true }
+                                    .clickable { BuyIdeaActions.ToggleDeleteForm(buyIdea.id) }
                                     .padding(12.dp)
                             )
 
@@ -225,10 +227,10 @@ fun BuyIdeaBox(
 
     if (buyIdeaUiState.isDeleteFormOpen == buyIdea.id) {
         DeleteForm(
-            onDismiss = { isDeleteFormOpen = false },
+            onDismiss = { BuyIdeaActions.ToggleDeleteForm(buyIdea.id) },
             itemName = buyIdea.name,
-            onDelete = { transactionViewModel.deleteBuyIdea(buyIdea) },
-            closeOptions = { isOptionOpen = false })
+            onDelete = { BuyIdeaActions.DeleteBuyIdea(buyIdea) },
+            closeOptions = { BuyIdeaActions.ToggleOption(buyIdea.id) })
     }
 }
 
