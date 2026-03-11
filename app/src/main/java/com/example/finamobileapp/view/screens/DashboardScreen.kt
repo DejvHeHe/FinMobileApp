@@ -44,7 +44,6 @@ fun Dashboard(navController: NavHostController) {
     val scrollState = rememberScrollState()
     val viewModel: DashboardViewModel = viewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val buyIdeaState by viewModel.buyIdeaState.collectAsStateWithLifecycle()
     val buyIdeaUisState by viewModel.buyIdeaUiState.collectAsStateWithLifecycle()
 
 
@@ -131,15 +130,14 @@ fun Dashboard(navController: NavHostController) {
         BuyIdeasDashboard(
             onBuyIdeaClick = { viewModel.prepareCreate() },
             buyIdeas = state.buyIdeas,
-            addTransaction={viewModel.addTransaction(transaction)},
-            deleteBuyIdea={viewModel.deleteBuyIdea(buyIdea)},
+            onBuyIdeaAction=viewModel::onBuyIdeaAction,
             setBuyIdea = { idea -> viewModel.prepareUpdate(idea) },
             buyIdeaUiState=buyIdeaUisState
         )
     }
-    if (buyIdeaState.isOpen) {
-        Log.d("DashboardVM", "VYBRANÝ BUYiDEA: ${buyIdeaState.selectedIdea}")
-        Log.d("DashboardVM", "VYBRANÁ FORMA: ${buyIdeaState.mode}")
+    if (buyIdeaUisState.isOpen) {
+        Log.d("DashboardVM", "VYBRANÝ BUYiDEA: ${buyIdeaUisState.selectedIdea}")
+        Log.d("DashboardVM", "VYBRANÁ FORMA: ${buyIdeaUisState.mode}")
 
         ModalBottomSheet(
             onDismissRequest = { viewModel.setBuyIdeaSheet(false) },
@@ -151,11 +149,11 @@ fun Dashboard(navController: NavHostController) {
                     .fillMaxWidth()
                     .defaultMinSize(minHeight = 300.dp)
             ) {
-                if (buyIdeaState.mode == FormMode.CREATE) {
+                if (buyIdeaUisState.mode == FormMode.CREATE) {
                     BuyIdeaForm(
                         onDismiss = { viewModel.setBuyIdeaSheet(false) },
                         onSubmit = { idea -> viewModel.addBuyIdea(idea) },
-                        buyIdea = buyIdeaState.selectedIdea
+                        buyIdea = buyIdeaUisState.selectedIdea
                     )
 
                 } else {
@@ -163,7 +161,7 @@ fun Dashboard(navController: NavHostController) {
                     BuyIdeaForm(
                         onDismiss = { viewModel.setBuyIdeaSheet(false) },
                         onSubmit = { idea -> viewModel.updateBuyIdea(idea) },
-                        buyIdea = buyIdeaState.selectedIdea
+                        buyIdea = buyIdeaUisState.selectedIdea
                     )
 
 

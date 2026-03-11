@@ -41,6 +41,7 @@ import com.example.finamobileapp.model.entities.Transaction
 import com.example.finamobileapp.model.entities.enums.TransactionAccountType
 import com.example.finamobileapp.view.forms.DeleteForm
 import com.example.finamobileapp.view_model.DashboardViewModel
+import com.example.finamobileapp.view_model.interfaces.BuyIdeaActions
 import com.example.finamobileapp.view_model.uiState.BuyIdeaUiState
 import java.time.LocalDate
 
@@ -48,8 +49,7 @@ import java.time.LocalDate
 @Composable
 fun BuyIdeaBox(
     buyIdea: BuyIdeas,
-    addTransaction: (Transaction)-> Unit,
-    deleteBuyIdea: (BuyIdeas)-> Unit,
+    onBuyIdeaAction: (BuyIdeaActions)->Unit,
     setBuyIdea: (BuyIdeas) -> Unit,
     buyIdeaUiState: BuyIdeaUiState
 ) {
