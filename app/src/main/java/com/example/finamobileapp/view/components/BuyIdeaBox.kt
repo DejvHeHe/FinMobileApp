@@ -78,7 +78,7 @@ fun BuyIdeaBox(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Checkbox(
-                    checked = isChecked,
+                    checked = buyIdeaUiState.isChecked.contains(buyIdea.id),
                     onCheckedChange = { isChecked = it }
                 )
 
@@ -113,7 +113,7 @@ fun BuyIdeaBox(
             }
 
 
-            if (isChecked) {
+            if (buyIdeaUiState.isChecked.contains(buyIdea.id)) {
                 Column(
                     modifier = Modifier
                         .padding(start = 12.dp, end = 12.dp, bottom = 12.dp)
@@ -182,7 +182,7 @@ fun BuyIdeaBox(
                     }
                 }
             }
-            if (isOptionOpen) {
+            if (buyIdeaUiState.isOpen) {
                 Popup(onDismissRequest = { isOptionOpen = false }) {
                     Card(
                         modifier = Modifier
@@ -222,7 +222,8 @@ fun BuyIdeaBox(
             }
         }
     }
-    if (isDeleteFormOpen) {
+
+    if (buyIdeaUiState.isDeleteFormOpen == buyIdea.id) {
         DeleteForm(
             onDismiss = { isDeleteFormOpen = false },
             itemName = buyIdea.name,
