@@ -44,13 +44,12 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     private val today = LocalDate.now()
-   
 
-    private val _buyIdeaUiState=MutableStateFlow(BuyIdeaUiState())
-    
 
-    
-    val buyIdeaUiState: StateFlow<BuyIdeaUiState> =_buyIdeaUiState.asStateFlow()
+    private val _buyIdeaUiState = MutableStateFlow(BuyIdeaUiState())
+
+
+    val buyIdeaUiState: StateFlow<BuyIdeaUiState> = _buyIdeaUiState.asStateFlow()
 
 
     val uiState: StateFlow<DashboardUiState> = combine(
@@ -85,10 +84,32 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         transactionRepository.getSumyByCategories(today, type)
 
 
-    fun addTransaction(transaction: Transaction) {
-        viewModelScope.launch(Dispatchers.IO) {
-            transactionRepository.addSmartTransaction(transaction)
+    fun addTransaction(buyIdea: BuyIdeas) {
+
+        val selectedAccount = buyIdeaUiState.value.selectedOptionAccType[buyIdea.id]
+        val accountTypeEnum =
+            TransactionAccountType.entries.find {
+                it.name == selectedAccount?.name
+            }
+        if (accountTypeEnum != null) {
+
+            val transaction = Transaction(
+                name = buyIdea.name,
+                amount = buyIdea.price,
+                category = buyIdea.category,
+                type = buyIdea.type,
+                accountType = accountTypeEnum,
+                date = LocalDate.now(),
+                description = buyIdea.description,
+                groupId = null
+            )
+            viewModelScope.launch(Dispatchers.IO) {
+                transactionRepository.addSmartTransaction(transaction)
+            }
+            deleteBuyIdea(buyIdea)
+
         }
+
     }
 
     fun addBuyIdea(buyIdea: BuyIdeas) {
@@ -131,11 +152,15 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    fun onBuyIdeaAction(action: BuyIdeaActions){
-        when(action){
-            is BuyIdeaActions.AddTransaction -> addTransaction(action.transaction)
+    fun onBuyIdeaAction(action: BuyIdeaActions) {
+        when (action) {
+            is BuyIdeaActions.AddTransaction -> addTransaction(action.buyIdea)
             is BuyIdeaActions.DeleteBuyIdea -> deleteBuyIdea(action.buyIdea)
-            is BuyIdeaActions.SelectAccTypeOption -> selectAccTypeOption(action.id,action.accountType)
+            is BuyIdeaActions.SelectAccTypeOption -> selectAccTypeOption(
+                action.id,
+                action.accountType
+            )
+
             is BuyIdeaActions.SetBuyIdea -> TODO()
             is BuyIdeaActions.ToggleDeleteForm -> toggleDeleteForm(action.id)
             is BuyIdeaActions.ToggleExpandAccountType -> toggleExpandAccountType(action.id)
@@ -145,8 +170,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
 
-
-     fun toggleIsChecked(id: Long) {
+    fun toggleIsChecked(id: Long) {
         _buyIdeaUiState.update { state ->
             val newChecked = if (state.isChecked.contains(id)) {
                 state.isChecked - id
@@ -185,7 +209,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             it.copy(isDeleteFormOpen = id)
         }
     }
-
 
 
 }

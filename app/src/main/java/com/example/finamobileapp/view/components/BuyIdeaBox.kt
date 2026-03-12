@@ -17,7 +17,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -26,10 +25,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,39 +33,38 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import com.example.finamobileapp.model.entities.BuyIdeas
-import com.example.finamobileapp.model.entities.Transaction
 import com.example.finamobileapp.model.entities.enums.TransactionAccountType
 import com.example.finamobileapp.view.forms.DeleteForm
-import com.example.finamobileapp.view_model.DashboardViewModel
 import com.example.finamobileapp.view_model.interfaces.BuyIdeaActions
 import com.example.finamobileapp.view_model.uiState.BuyIdeaUiState
-import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun BuyIdeaBox(
     buyIdea: BuyIdeas,
-    onBuyIdeaAction: (BuyIdeaActions)->Unit,
-    setBuyIdea: (BuyIdeas) -> Unit,
+    onBuyIdeaAction: (BuyIdeaActions) -> Unit,
+    setBuyIdea: (BuyIdeas) -> Unit, // TODO: I toto bys mohl časem přesunout do onBuyIdeaAction
     buyIdeaUiState: BuyIdeaUiState
 ) {
 
-
-
+    val isChecked = buyIdeaUiState.isChecked.contains(buyIdea.id)
+    val isOptionOpen = buyIdeaUiState.isOptionOpen == buyIdea.id
+    val isDeleteFormOpen = buyIdeaUiState.isDeleteFormOpen == buyIdea.id
+    val isExpanded = buyIdeaUiState.expandedAccountType.contains(buyIdea.id)
+    val selectedAccount = buyIdeaUiState.selectedOptionAccType[buyIdea.id]
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .combinedClickable(
-                onClick = {/**/ },
-                onLongClick = { BuyIdeaActions.ToggleOption(buyIdea.id)}
+                onClick = { /* Případně detail */ },
+                onLongClick = { onBuyIdeaAction(BuyIdeaActions.ToggleOption(buyIdea.id)) }
             ),
         shape = RoundedCornerShape(12.dp),
         border = BorderStroke(1.dp, Color.Black),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFD9D9D9)),
-
-        ) {
+    ) {
         Column {
             Row(
                 modifier = Modifier
@@ -79,8 +73,8 @@ fun BuyIdeaBox(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Checkbox(
-                    checked = buyIdeaUiState.isChecked.contains(buyIdea.id),
-                    onCheckedChange = { BuyIdeaActions.ToggleIsChecked(buyIdea.id) }
+                    checked = isChecked,
+                    onCheckedChange = { onBuyIdeaAction(BuyIdeaActions.ToggleIsChecked(buyIdea.id)) }
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -114,40 +108,63 @@ fun BuyIdeaBox(
             }
 
 
-            if (buyIdeaUiState.isChecked.contains(buyIdea.id)) {
+            if (isChecked) {
                 Column(
                     modifier = Modifier
                         .padding(start = 12.dp, end = 12.dp, bottom = 12.dp)
                         .fillMaxWidth()
                 ) {
-                    HorizontalDivider(modifier = Modifier.padding(bottom = 12.dp), color = Color.Gray)
+                    HorizontalDivider(
+                        modifier = Modifier.padding(bottom = 12.dp),
+                        color = Color.Gray
+                    )
 
                     ExposedDropdownMenuBox(
-                        expanded = buyIdeaUiState.expandedAccountType.contains(buyIdea.id),
-                        onExpandedChange = { BuyIdeaActions.ToggleExpandAccountType(buyIdea.id) },
+                        expanded = isExpanded,
+                        onExpandedChange = {
+                            onBuyIdeaAction(
+                                BuyIdeaActions.ToggleExpandAccountType(
+                                    buyIdea.id
+                                )
+                            )
+                        },
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         OutlinedTextField(
-                            value = buyIdeaUiState.selectedOptionAccType[buyIdea.id]?.name ?: "Vyber účet",
+                            value = selectedAccount?.name ?: "Vyber účet",
                             onValueChange = {},
                             readOnly = true,
                             label = { Text("Z jakého účtu?") },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = buyIdeaUiState.expandedAccountType.contains(buyIdea.id)) },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded) },
                             modifier = Modifier
                                 .menuAnchor()
                                 .fillMaxWidth()
                         )
                         ExposedDropdownMenu(
-                            expanded = buyIdeaUiState.expandedAccountType.contains(buyIdea.id),
-                            onDismissRequest = { BuyIdeaActions.ToggleExpandAccountType(buyIdea.id) }
+                            expanded = isExpanded,
+                            onDismissRequest = {
+                                onBuyIdeaAction(
+                                    BuyIdeaActions.ToggleExpandAccountType(
+                                        buyIdea.id
+                                    )
+                                )
+                            }
                         ) {
                             TransactionAccountType.entries.forEach { accountType ->
                                 DropdownMenuItem(
                                     text = { Text(accountType.name) },
                                     onClick = {
-                                        BuyIdeaActions.SelectAccTypeOption(buyIdea.id,accountType)
-                                        BuyIdeaActions.ToggleExpandAccountType(buyIdea.id)
-
+                                        onBuyIdeaAction(
+                                            BuyIdeaActions.SelectAccTypeOption(
+                                                buyIdea.id,
+                                                accountType
+                                            )
+                                        )
+                                        onBuyIdeaAction(
+                                            BuyIdeaActions.ToggleExpandAccountType(
+                                                buyIdea.id
+                                            )
+                                        )
                                     }
                                 )
                             }
@@ -157,26 +174,9 @@ fun BuyIdeaBox(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Button(
-                        onClick = {
-                            val accountTypeEnum =
-                                TransactionAccountType.entries.find { it.name == selectedOptionAccType }
-                            if (accountTypeEnum != null) {
-                                transactionViewModel.addTransaction(
-                                    Transaction(
-                                        name = buyIdea.name,
-                                        amount = buyIdea.price,
-                                        category = buyIdea.category,
-                                        type = buyIdea.type,
-                                        accountType = accountTypeEnum,
-                                        date = LocalDate.now(),
-                                        description = buyIdea.description,
-                                        groupId = null
-                                    )
-                                )
-                                BuyIdeaActions.DeleteBuyIdea(buyIdea)
-                            }
-                        },
-                        enabled = !buyIdeaUiState.selectedOptionAccType.isEmpty(),
+                        onClick = { onBuyIdeaAction(BuyIdeaActions.AddTransaction(buyIdea)) },
+
+                        enabled = selectedAccount != null,
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
                     ) {
@@ -184,8 +184,10 @@ fun BuyIdeaBox(
                     }
                 }
             }
-            if (buyIdeaUiState.isOpen) {
-                Popup(onDismissRequest = { BuyIdeaActions.ToggleOption(buyIdea.id) }) {
+
+
+            if (isOptionOpen) {
+                Popup(onDismissRequest = { onBuyIdeaAction(BuyIdeaActions.ToggleOption(buyIdea.id)) }) {
                     Card(
                         modifier = Modifier
                             .padding(10.dp)
@@ -203,8 +205,7 @@ fun BuyIdeaBox(
                                     .fillMaxWidth()
                                     .clickable {
                                         setBuyIdea(buyIdea)
-
-
+                                        onBuyIdeaAction(BuyIdeaActions.ToggleOption(buyIdea.id))
                                     }
                                     .padding(12.dp)
                             )
@@ -212,25 +213,32 @@ fun BuyIdeaBox(
                                 text = "Smazat",
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { BuyIdeaActions.ToggleDeleteForm(buyIdea.id) }
+                                    .clickable {
+                                        onBuyIdeaAction(
+                                            BuyIdeaActions.ToggleDeleteForm(
+                                                buyIdea.id
+                                            )
+                                        )
+                                    }
                                     .padding(12.dp)
                             )
-
                         }
-
-
                     }
                 }
             }
         }
     }
 
-    if (buyIdeaUiState.isDeleteFormOpen == buyIdea.id) {
+
+    if (isDeleteFormOpen) {
         DeleteForm(
-            onDismiss = { BuyIdeaActions.ToggleDeleteForm(buyIdea.id) },
+            onDismiss = { onBuyIdeaAction(BuyIdeaActions.ToggleDeleteForm(null)) },
             itemName = buyIdea.name,
-            onDelete = { BuyIdeaActions.DeleteBuyIdea(buyIdea) },
-            closeOptions = { BuyIdeaActions.ToggleOption(buyIdea.id) })
+            onDelete = {
+                onBuyIdeaAction(BuyIdeaActions.DeleteBuyIdea(buyIdea))
+                onBuyIdeaAction(BuyIdeaActions.ToggleDeleteForm(null))
+            },
+            closeOptions = { onBuyIdeaAction(BuyIdeaActions.ToggleOption(buyIdea.id)) }
+        )
     }
 }
-
