@@ -31,12 +31,16 @@ import com.example.finamobileapp.model.entities.enums.TransactionType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BuyIdeaForm(onDismiss: () -> Unit, onSubmit:(BuyIdeas)->Unit, buyIdea: BuyIdeas?) {
+fun BuyIdeaForm(onDismiss: () -> Unit, onSubmit: (BuyIdeas) -> Unit, buyIdea: BuyIdeas?) {
     var name by remember { mutableStateOf(buyIdea?.name ?: "") }
     var price by remember { mutableStateOf(buyIdea?.price?.toString() ?: "") }
     var expandedCategory by remember { mutableStateOf(false) }
-    var selectedOptionCategory by remember { mutableStateOf(buyIdea?.category?.name ?: "Vyber kategorii") }
-    var description by remember { mutableStateOf(buyIdea?.description ?:  "") }
+    var selectedOptionCategory by remember {
+        mutableStateOf(
+            buyIdea?.category?.name ?: "Vyber kategorii"
+        )
+    }
+    var description by remember { mutableStateOf(buyIdea?.description ?: "") }
 
     Card(
         modifier = Modifier
@@ -118,6 +122,7 @@ fun BuyIdeaForm(onDismiss: () -> Unit, onSubmit:(BuyIdeas)->Unit, buyIdea: BuyId
                     if (categoryEnum != null) {
                         onSubmit(
                             BuyIdeas(
+                                id = buyIdea?.id ?: 0,
                                 name = name,
                                 price = price.toIntOrNull() ?: 0,
                                 category = categoryEnum,

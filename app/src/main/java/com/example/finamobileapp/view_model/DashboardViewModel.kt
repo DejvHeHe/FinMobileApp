@@ -2,6 +2,7 @@ package com.example.finamobileapp.view_model
 
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finamobileapp.model.database.TransactionDatabase
@@ -126,6 +127,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun updateBuyIdea(buyIdea: BuyIdeas) {
         viewModelScope.launch(Dispatchers.IO) {
+            Log.d("DashboardVM", "JSEM V UPDATE")
+            Log.d("DashboardVM","BuyIdea je ${buyIdea}")
             buyIdeaRepository.updateBuyIdea(buyIdea)
         }
     }

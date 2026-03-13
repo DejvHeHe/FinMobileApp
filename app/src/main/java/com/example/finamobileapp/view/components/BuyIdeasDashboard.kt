@@ -19,8 +19,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.finamobileapp.model.entities.BuyIdeas
-import com.example.finamobileapp.view_model.DashboardViewModel
-import com.example.finamobileapp.model.entities.Transaction
 import com.example.finamobileapp.view_model.interfaces.BuyIdeaActions
 import com.example.finamobileapp.view_model.uiState.BuyIdeaUiState
 
@@ -28,7 +26,7 @@ import com.example.finamobileapp.view_model.uiState.BuyIdeaUiState
 fun BuyIdeasDashboard(
     onBuyIdeaClick: () -> Unit,
     buyIdeas: List<BuyIdeas>,
-    onBuyIdeaAction: (BuyIdeaActions)->Unit,
+    onBuyIdeaAction: (BuyIdeaActions) -> Unit,
     setBuyIdea: (BuyIdeas) -> Unit,
     buyIdeaUiState: BuyIdeaUiState
 ) {
@@ -55,12 +53,8 @@ fun BuyIdeasDashboard(
             Spacer(modifier = Modifier.height(16.dp))
             buyIdeas.forEach { buyIdea ->
 
-                BuyIdeaBox(buyIdea,  onBuyIdeaAction,setBuyIdea,buyIdeaUiState)
+                BuyIdeaBox(buyIdea, onBuyIdeaAction, setBuyIdea, buyIdeaUiState)
             }
-
-
-
-
 
             Spacer(modifier = Modifier.height(16.dp))
             Button(
