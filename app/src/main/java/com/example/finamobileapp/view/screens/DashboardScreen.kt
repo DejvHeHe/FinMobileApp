@@ -29,13 +29,13 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.finamobileapp.model.entities.enums.FormMode
 import com.example.finamobileapp.view.components.BalanceBox
 import com.example.finamobileapp.view.components.BuyIdeasDashboard
 import com.example.finamobileapp.view.components.GoalBox
 import com.example.finamobileapp.view.components.TypeBox
 import com.example.finamobileapp.view.forms.BuyIdeaForm
 import com.example.finamobileapp.view_model.DashboardViewModel
+import com.example.finamobileapp.view_model.interfaces.BuyIdeaActions
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,9 +45,12 @@ fun Dashboard(navController: NavHostController) {
     val viewModel: DashboardViewModel = viewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val buyIdeaUisState by viewModel.buyIdeaUiState.collectAsStateWithLifecycle()
+    val goalUiState by viewModel.goalUiState.collectAsStateWithLifecycle()
 
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+
 
 
 
@@ -120,6 +123,7 @@ fun Dashboard(navController: NavHostController) {
             state.currentGoal,
             state.balanceSavings,
             state.currentlyInvested,
+            goalUiState = goalUiState,
             onSaveClick = { updatedGoal ->
                 viewModel.setGoal(updatedGoal)
             }
@@ -128,11 +132,9 @@ fun Dashboard(navController: NavHostController) {
 
 
         BuyIdeasDashboard(
-            onBuyIdeaClick = { viewModel.prepareCreate() },
             buyIdeas = state.buyIdeas,
-            onBuyIdeaAction=viewModel::onBuyIdeaAction,
-            setBuyIdea = { idea -> viewModel.prepareUpdate(idea) },
-            buyIdeaUiState=buyIdeaUisState
+            onBuyIdeaAction = viewModel::onBuyIdeaAction,
+            buyIdeaUiState = buyIdeaUisState
         )
     }
     if (buyIdeaUisState.isOpen) {
@@ -140,7 +142,7 @@ fun Dashboard(navController: NavHostController) {
         Log.d("DashboardVM", "VYBRANÁ FORMA: ${buyIdeaUisState.mode}")
 
         ModalBottomSheet(
-            onDismissRequest = { viewModel.setBuyIdeaSheet(false) },
+            onDismissRequest = { viewModel.onBuyIdeaAction(BuyIdeaActions.SetBuyIdeaSheet(false)) },
             sheetState = sheetState,
             containerColor = Color(0xFFD9D9D9),
         ) {
@@ -149,23 +151,12 @@ fun Dashboard(navController: NavHostController) {
                     .fillMaxWidth()
                     .defaultMinSize(minHeight = 300.dp)
             ) {
-                if (buyIdeaUisState.mode == FormMode.CREATE) {
-                    BuyIdeaForm(
-                        onDismiss = { viewModel.setBuyIdeaSheet(false) },
-                        onSubmit = { idea -> viewModel.addBuyIdea(idea) },
-                        buyIdea = buyIdeaUisState.selectedIdea
-                    )
 
-                } else {
+                BuyIdeaForm(
+                    onBuyIdeaActions = viewModel::onBuyIdeaAction,
+                    buyIdeaUiState = buyIdeaUisState
+                )
 
-                    BuyIdeaForm(
-                        onDismiss = { viewModel.setBuyIdeaSheet(false) },
-                        onSubmit = { idea -> viewModel.updateBuyIdea(idea) },
-                        buyIdea = buyIdeaUisState.selectedIdea
-                    )
-
-
-                }
 
             }
         }

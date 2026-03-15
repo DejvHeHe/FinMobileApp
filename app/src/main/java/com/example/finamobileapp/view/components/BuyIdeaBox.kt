@@ -43,7 +43,6 @@ import com.example.finamobileapp.view_model.uiState.BuyIdeaUiState
 fun BuyIdeaBox(
     buyIdea: BuyIdeas,
     onBuyIdeaAction: (BuyIdeaActions) -> Unit,
-    setBuyIdea: (BuyIdeas) -> Unit, // TODO: I toto bys mohl časem přesunout do onBuyIdeaAction
     buyIdeaUiState: BuyIdeaUiState
 ) {
 
@@ -204,7 +203,7 @@ fun BuyIdeaBox(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
-                                        setBuyIdea(buyIdea)
+                                        onBuyIdeaAction(BuyIdeaActions.PrepareUpdate(buyIdea))
                                         onBuyIdeaAction(BuyIdeaActions.ToggleOption(buyIdea.id))
                                     }
                                     .padding(12.dp)

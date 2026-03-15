@@ -17,30 +17,21 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.finamobileapp.model.entities.BuyIdeas
 import com.example.finamobileapp.model.entities.enums.TransactionCategory
-import com.example.finamobileapp.model.entities.enums.TransactionType
+import com.example.finamobileapp.view_model.interfaces.BuyIdeaActions
+import com.example.finamobileapp.view_model.uiState.BuyIdeaUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BuyIdeaForm(onDismiss: () -> Unit, onSubmit: (BuyIdeas) -> Unit, buyIdea: BuyIdeas?) {
-    var name by remember { mutableStateOf(buyIdea?.name ?: "") }
-    var price by remember { mutableStateOf(buyIdea?.price?.toString() ?: "") }
-    var expandedCategory by remember { mutableStateOf(false) }
-    var selectedOptionCategory by remember {
-        mutableStateOf(
-            buyIdea?.category?.name ?: "Vyber kategorii"
-        )
-    }
-    var description by remember { mutableStateOf(buyIdea?.description ?: "") }
+fun BuyIdeaForm(
+    onBuyIdeaActions: (BuyIdeaActions) -> Unit,
+    buyIdeaUiState: BuyIdeaUiState
+) {
+
 
     Card(
         modifier = Modifier
@@ -57,16 +48,16 @@ fun BuyIdeaForm(onDismiss: () -> Unit, onSubmit: (BuyIdeas) -> Unit, buyIdea: Bu
         ) {
             // Jméno
             OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
+                value = buyIdeaUiState.formName,
+                onValueChange = { onBuyIdeaActions(BuyIdeaActions.SetFormName(it)) },
                 label = { Text("Jméno") },
                 modifier = Modifier.fillMaxWidth()
             )
 
             // Částka
             OutlinedTextField(
-                value = price,
-                onValueChange = { price = it },
+                value = buyIdeaUiState.formPrice,
+                onValueChange = { onBuyIdeaActions(BuyIdeaActions.SetFormPrice(it)) },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Suma") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
@@ -74,30 +65,36 @@ fun BuyIdeaForm(onDismiss: () -> Unit, onSubmit: (BuyIdeas) -> Unit, buyIdea: Bu
 
             // Kategorie
             ExposedDropdownMenuBox(
-                expanded = expandedCategory,
-                onExpandedChange = { expandedCategory = !expandedCategory }
+                expanded = buyIdeaUiState.formExpandedCategory,
+                onExpandedChange = { onBuyIdeaActions(BuyIdeaActions.SetFormExpandedCategory(!buyIdeaUiState.formExpandedCategory)) }
             ) {
                 OutlinedTextField(
-                    value = selectedOptionCategory,
+                    value = buyIdeaUiState.formCategory?.name ?: "Vyber kategorii",
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Kategorie") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategory) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = buyIdeaUiState.formExpandedCategory) },
                     modifier = Modifier
                         .menuAnchor()
                         .fillMaxWidth()
                 )
                 ExposedDropdownMenu(
-                    expanded = expandedCategory,
-                    onDismissRequest = { expandedCategory = false }
+                    expanded = buyIdeaUiState.formExpandedCategory,
+                    onDismissRequest = {
+                        onBuyIdeaActions(
+                            BuyIdeaActions.SetFormExpandedCategory(
+                                false
+                            )
+                        )
+                    }
                 ) {
                     TransactionCategory.entries.forEach { category ->
                         if (category != TransactionCategory.SAVINGS) {
                             DropdownMenuItem(
                                 text = { Text(category.name) },
                                 onClick = {
-                                    selectedOptionCategory = category.name
-                                    expandedCategory = false
+                                    onBuyIdeaActions(BuyIdeaActions.SetFormCategory(category))
+                                    onBuyIdeaActions(BuyIdeaActions.SetFormExpandedCategory(false))
                                 }
                             )
                         }
@@ -107,8 +104,8 @@ fun BuyIdeaForm(onDismiss: () -> Unit, onSubmit: (BuyIdeas) -> Unit, buyIdea: Bu
 
             // Popis
             OutlinedTextField(
-                value = description,
-                onValueChange = { description = it },
+                value = buyIdeaUiState.formDescription,
+                onValueChange = { onBuyIdeaActions(BuyIdeaActions.SetFormDescription(it)) },
                 label = { Text("Popis") },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3
@@ -117,25 +114,12 @@ fun BuyIdeaForm(onDismiss: () -> Unit, onSubmit: (BuyIdeas) -> Unit, buyIdea: Bu
             // Tlačítko Potvrdit
             Button(
                 onClick = {
-                    val categoryEnum =
-                        TransactionCategory.entries.find { it.name == selectedOptionCategory }
-                    if (categoryEnum != null) {
-                        onSubmit(
-                            BuyIdeas(
-                                id = buyIdea?.id ?: 0,
-                                name = name,
-                                price = price.toIntOrNull() ?: 0,
-                                category = categoryEnum,
-                                type = TransactionType.EXPENSE,
-                                description = description
-                            )
-                        )
-                        onDismiss()
-                    }
+                    onBuyIdeaActions(BuyIdeaActions.OnBuyIdeaSubmit)
+                    onBuyIdeaActions(BuyIdeaActions.SetBuyIdeaSheet(false))
                 },
-                enabled = name.isNotBlank() &&
-                        (price.toIntOrNull() ?: 0) > 0 &&
-                        selectedOptionCategory != "Vyber kategorii",
+                enabled = buyIdeaUiState.formName.isNotBlank() &&
+                        (buyIdeaUiState.formPrice.toIntOrNull() ?: 0) > 0 &&
+                        buyIdeaUiState.formCategory != null,
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .fillMaxWidth()

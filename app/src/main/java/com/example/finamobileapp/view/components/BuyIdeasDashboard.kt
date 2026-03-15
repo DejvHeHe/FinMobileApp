@@ -24,10 +24,8 @@ import com.example.finamobileapp.view_model.uiState.BuyIdeaUiState
 
 @Composable
 fun BuyIdeasDashboard(
-    onBuyIdeaClick: () -> Unit,
     buyIdeas: List<BuyIdeas>,
     onBuyIdeaAction: (BuyIdeaActions) -> Unit,
-    setBuyIdea: (BuyIdeas) -> Unit,
     buyIdeaUiState: BuyIdeaUiState
 ) {
 
@@ -53,12 +51,12 @@ fun BuyIdeasDashboard(
             Spacer(modifier = Modifier.height(16.dp))
             buyIdeas.forEach { buyIdea ->
 
-                BuyIdeaBox(buyIdea, onBuyIdeaAction, setBuyIdea, buyIdeaUiState)
+                BuyIdeaBox(buyIdea, onBuyIdeaAction, buyIdeaUiState)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = onBuyIdeaClick,
+                onClick = { onBuyIdeaAction(BuyIdeaActions.PrepareCreate) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(

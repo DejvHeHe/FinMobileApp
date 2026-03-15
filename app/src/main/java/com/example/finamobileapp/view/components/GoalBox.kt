@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.finamobileapp.model.entities.MonthlyGoal
+import com.example.finamobileapp.view_model.uiState.GoalUiState
 import java.time.LocalDate
 
 @Composable
@@ -31,6 +32,7 @@ fun GoalBox(
     currentGoal: MonthlyGoal? = null,
     savings: Int,
     investment: Int,
+    goalUiState: GoalUiState,
     onSaveClick: (MonthlyGoal) -> Unit
 ) {
 

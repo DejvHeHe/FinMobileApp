@@ -2,7 +2,6 @@ package com.example.finamobileapp.view_model
 
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finamobileapp.model.database.TransactionDatabase
@@ -19,6 +18,7 @@ import com.example.finamobileapp.model.repository.TransactionRepository
 import com.example.finamobileapp.view_model.interfaces.BuyIdeaActions
 import com.example.finamobileapp.view_model.uiState.BuyIdeaUiState
 import com.example.finamobileapp.view_model.uiState.DashboardUiState
+import com.example.finamobileapp.view_model.uiState.GoalUiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,16 +42,19 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         transactionRepository = TransactionRepository(db.transactionDao())
         buyIdeaRepository = BuyIdeasRepository(db.buyIdeaDao())
         monthlyGoalRepository = MonthlyGoalRepository(db.goalDao())
+
+
     }
 
     private val today = LocalDate.now()
 
 
     private val _buyIdeaUiState = MutableStateFlow(BuyIdeaUiState())
+    private val _goalUiState = MutableStateFlow(GoalUiState())
 
 
     val buyIdeaUiState: StateFlow<BuyIdeaUiState> = _buyIdeaUiState.asStateFlow()
-
+    val goalUiState: StateFlow<GoalUiState> = _goalUiState.asStateFlow()
 
     val uiState: StateFlow<DashboardUiState> = combine(
         combine(
@@ -113,9 +116,29 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     }
 
-    fun addBuyIdea(buyIdea: BuyIdeas) {
+
+    fun onBuyIdeaSubmit() {
+        val state = buyIdeaUiState.value
+        val category = state.formCategory ?: return
+
+        val ideaToSave = BuyIdeas(
+
+            id = state.selectedIdea?.id ?: 0,
+            name = state.formName,
+            price = state.formPrice.toIntOrNull() ?: 0,
+            category = category,
+            type = TransactionType.EXPENSE,
+            description = state.formDescription
+        )
+
         viewModelScope.launch(Dispatchers.IO) {
-            buyIdeaRepository.addBuyIdea(buyIdea)
+            if (state.mode == FormMode.CREATE) {
+                buyIdeaRepository.addBuyIdea(ideaToSave)
+            } else {
+                buyIdeaRepository.updateBuyIdea(ideaToSave)
+            }
+
+
         }
     }
 
@@ -125,13 +148,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    fun updateBuyIdea(buyIdea: BuyIdeas) {
-        viewModelScope.launch(Dispatchers.IO) {
-            Log.d("DashboardVM", "JSEM V UPDATE")
-            Log.d("DashboardVM","BuyIdea je ${buyIdea}")
-            buyIdeaRepository.updateBuyIdea(buyIdea)
-        }
-    }
 
     fun setGoal(goal: MonthlyGoal) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -145,13 +161,29 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun prepareUpdate(idea: BuyIdeas) {
         _buyIdeaUiState.update {
-            it.copy(selectedIdea = idea, mode = FormMode.UPDATE, isOpen = true)
+            it.copy(
+                selectedIdea = idea,
+                mode = FormMode.UPDATE,
+                isOpen = true,
+                formName = idea.name,
+                formPrice = idea.price.toString(),
+                formCategory = idea.category,
+                formDescription = idea.description
+            )
         }
     }
 
     fun prepareCreate() {
         _buyIdeaUiState.update {
-            it.copy(selectedIdea = null, mode = FormMode.CREATE, isOpen = true)
+            it.copy(
+                selectedIdea = null,
+                mode = FormMode.CREATE,
+                isOpen = true,
+                formName = "",
+                formPrice = "",
+                formDescription = "",
+                formCategory = null
+            )
         }
     }
 
@@ -164,11 +196,19 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 action.accountType
             )
 
-            is BuyIdeaActions.SetBuyIdea -> TODO()
             is BuyIdeaActions.ToggleDeleteForm -> toggleDeleteForm(action.id)
             is BuyIdeaActions.ToggleExpandAccountType -> toggleExpandAccountType(action.id)
             is BuyIdeaActions.ToggleIsChecked -> toggleIsChecked(action.id)
             is BuyIdeaActions.ToggleOption -> toggleOption(action.id)
+            is BuyIdeaActions.PrepareCreate -> prepareCreate()
+            is BuyIdeaActions.PrepareUpdate -> prepareUpdate(action.buyIdea)
+            is BuyIdeaActions.SetBuyIdeaSheet -> setBuyIdeaSheet(action.isOpen)
+            is BuyIdeaActions.SetFormCategory -> setFormCategory(action.category)
+            is BuyIdeaActions.SetFormDescription -> setFormDescription(action.description)
+            is BuyIdeaActions.SetFormName -> setFormName(action.name)
+            is BuyIdeaActions.SetFormPrice -> setFormPrice(action.price)
+            is BuyIdeaActions.SetFormExpandedCategory -> setFormExpandedCategory(action.isExpanded)
+            is BuyIdeaActions.OnBuyIdeaSubmit -> onBuyIdeaSubmit()
         }
     }
 
@@ -211,6 +251,39 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         _buyIdeaUiState.update {
             it.copy(isDeleteFormOpen = id)
         }
+    }
+
+
+    fun setFormName(name: String) {
+        _buyIdeaUiState.update { it.copy(formName = name) }
+    }
+
+    fun setFormPrice(price: String) {
+        _buyIdeaUiState.update { it.copy(formPrice = price) }
+    }
+
+    fun setFormDescription(description: String) {
+        _buyIdeaUiState.update { it.copy(formDescription = description) }
+    }
+
+    fun setFormCategory(category: TransactionCategory) {
+        _buyIdeaUiState.update { it.copy(formCategory = category) }
+    }
+
+    fun setFormExpandedCategory(isExpanded: Boolean) {
+        _buyIdeaUiState.update { it.copy(formExpandedCategory = isExpanded) }
+    }
+
+    fun toggleEditGoalOpen() {
+        _goalUiState.update { it.copy(isEditGoalOpen = !it.isEditGoalOpen) }
+    }
+
+    fun setInvestmentGoal(investmentGoal: String) {
+        _goalUiState.update { it.copy(investmentGoal = investmentGoal) }
+    }
+
+    fun setSavingGoal(savingsGoal: String) {
+        _goalUiState.update { it.copy(savingsGoal = savingsGoal) }
     }
 
 
