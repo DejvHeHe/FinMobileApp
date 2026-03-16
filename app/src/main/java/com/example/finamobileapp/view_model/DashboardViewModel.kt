@@ -16,6 +16,7 @@ import com.example.finamobileapp.model.repository.BuyIdeasRepository
 import com.example.finamobileapp.model.repository.MonthlyGoalRepository
 import com.example.finamobileapp.model.repository.TransactionRepository
 import com.example.finamobileapp.view_model.interfaces.BuyIdeaActions
+import com.example.finamobileapp.view_model.interfaces.GoalActions
 import com.example.finamobileapp.view_model.uiState.BuyIdeaUiState
 import com.example.finamobileapp.view_model.uiState.DashboardUiState
 import com.example.finamobileapp.view_model.uiState.GoalUiState
@@ -54,7 +55,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
 
     val buyIdeaUiState: StateFlow<BuyIdeaUiState> = _buyIdeaUiState.asStateFlow()
-    val goalUiState: StateFlow<GoalUiState> = _goalUiState.asStateFlow()
+
 
     val uiState: StateFlow<DashboardUiState> = combine(
         combine(
@@ -81,6 +82,25 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = DashboardUiState(isLoading = true)
+    )
+
+
+
+    val goalUiState: StateFlow<GoalUiState> = combine(
+        monthlyGoalRepository.getGoalForMonth(today.year, today.monthValue),
+        _goalUiState
+    ) { goalFromDb, formState ->
+        GoalUiState(
+
+            savingsGoal = formState.savingsGoal ?: goalFromDb?.savingsGoal?.toString() ?: "0",
+            investmentGoal = formState.investmentGoal ?: goalFromDb?.investmentGoal?.toString() ?: "0",
+            isEditGoalOpen = formState.isEditGoalOpen,
+            isLoading = false
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = GoalUiState(isLoading = true)
     )
 
 
@@ -149,9 +169,20 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
 
-    fun setGoal(goal: MonthlyGoal) {
+    fun setGoal() {
         viewModelScope.launch(Dispatchers.IO) {
-            monthlyGoalRepository.setGoal(goal)
+            val sGoal = _goalUiState.value.savingsGoal?.toIntOrNull() ?: 0
+            val iGoal = _goalUiState.value.investmentGoal?.toIntOrNull() ?: 0
+
+            val newGoal=MonthlyGoal(
+                    year = LocalDate.now().year,
+                    month = LocalDate.now().month.value,
+                    sGoal,
+                    iGoal
+                )
+
+
+            monthlyGoalRepository.setGoal(newGoal)
         }
     }
 
@@ -274,8 +305,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         _buyIdeaUiState.update { it.copy(formExpandedCategory = isExpanded) }
     }
 
-    fun toggleEditGoalOpen() {
-        _goalUiState.update { it.copy(isEditGoalOpen = !it.isEditGoalOpen) }
+    fun toggleEditGoal(isOpen: Boolean) {
+        _goalUiState.update { it.copy(isEditGoalOpen = isOpen) }
     }
 
     fun setInvestmentGoal(investmentGoal: String) {
@@ -284,6 +315,18 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun setSavingGoal(savingsGoal: String) {
         _goalUiState.update { it.copy(savingsGoal = savingsGoal) }
+    }
+
+    fun onGoalActions(action: GoalActions)
+    {
+        when(action){
+            is GoalActions.ToggleEditGoal -> toggleEditGoal(action.isOpen)
+            is GoalActions.SetSavingsGoal -> setSavingGoal(action.savings)
+            is GoalActions.SetInvestmentGoal -> setInvestmentGoal(action.investment)
+            is GoalActions.SetGoal->setGoal()
+
+        }
+
     }
 
 

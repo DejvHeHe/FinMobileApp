@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.finamobileapp.model.entities.MonthlyGoal
+import com.example.finamobileapp.view_model.interfaces.GoalActions
 import com.example.finamobileapp.view_model.uiState.GoalUiState
 import java.time.LocalDate
 
@@ -33,23 +34,11 @@ fun GoalBox(
     savings: Int,
     investment: Int,
     goalUiState: GoalUiState,
-    onSaveClick: (MonthlyGoal) -> Unit
+    onGoalActions:(GoalActions)->Unit
 ) {
 
 
-    var isEditOpen by remember { mutableStateOf(false) }
 
-
-    var savingGoalInput by remember(currentGoal) {
-        mutableStateOf(
-            currentGoal?.savingsGoal?.toString() ?: ""
-        )
-    }
-    var investmentGoalInput by remember(currentGoal) {
-        mutableStateOf(
-            currentGoal?.investmentGoal?.toString() ?: ""
-        )
-    }
 
     Card(
         modifier = Modifier
@@ -76,22 +65,21 @@ fun GoalBox(
             GoalStatusRow("Investice:", investment, currentGoal?.investmentGoal ?: 0)
 
             TextButton(
-                onClick = { isEditOpen = !isEditOpen },
+                onClick = { onGoalActions(GoalActions.ToggleEditGoal(true)) },
                 modifier = Modifier.align(Alignment.End)
             ) {
-                Text(if (isEditOpen) "Zavřít" else "Vytvořit / Změnit cíl")
+                Text(if (goalUiState.isEditGoalOpen) "Zavřít" else "Vytvořit / Změnit cíl")
             }
 
-            if (isEditOpen) {
+            if (goalUiState.isEditGoalOpen) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                     // TextField pro Spoření
                     TextField(
-                        value = savingGoalInput,
+                        value = goalUiState.savingsGoal?:"0",
                         onValueChange = { newValue ->
-                            // Povolíme jen číslice
-                            if (newValue.all { it.isDigit() }) savingGoalInput = newValue
+                            onGoalActions(GoalActions.SetSavingsGoal(newValue))
                         },
                         label = { Text("Cíl spoření") },
                         placeholder = { Text("Např. 5000") }, // Placeholder
@@ -101,9 +89,9 @@ fun GoalBox(
 
 
                     TextField(
-                        value = investmentGoalInput,
+                        value = goalUiState.investmentGoal?:"0",
                         onValueChange = { newValue ->
-                            if (newValue.all { it.isDigit() }) investmentGoalInput = newValue
+                            onGoalActions(GoalActions.SetInvestmentGoal(newValue))
                         },
                         label = { Text("Cíl investic") },
                         placeholder = { Text("Např. 2000") },
@@ -113,17 +101,8 @@ fun GoalBox(
 
                     TextButton(
                         onClick = {
-                            val sGoal = savingGoalInput.toIntOrNull() ?: 0
-                            val iGoal = investmentGoalInput.toIntOrNull() ?: 0
-                            onSaveClick(
-                                MonthlyGoal(
-                                    year = LocalDate.now().year,
-                                    month = LocalDate.now().month.value,
-                                    sGoal,
-                                    iGoal
-                                )
-                            )
-                            isEditOpen = false
+                            onGoalActions(GoalActions.SetGoal)
+                            onGoalActions(GoalActions.ToggleEditGoal(false))
                         },
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     ) {

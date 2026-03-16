@@ -124,9 +124,7 @@ fun Dashboard(navController: NavHostController) {
             state.balanceSavings,
             state.currentlyInvested,
             goalUiState = goalUiState,
-            onSaveClick = { updatedGoal ->
-                viewModel.setGoal(updatedGoal)
-            }
+            onGoalActions = viewModel::onGoalActions
         )
         Spacer(modifier = Modifier.height(40.dp))
 
