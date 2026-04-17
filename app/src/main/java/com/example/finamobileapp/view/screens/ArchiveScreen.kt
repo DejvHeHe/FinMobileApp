@@ -1,11 +1,15 @@
 package com.example.finamobileapp.view.screens
 
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -20,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.finamobileapp.view.components.DonutGraph
 import com.example.finamobileapp.view_model.ArchiveViewModel
 import com.example.finamobileapp.view_model.interfaces.DonutGraphActions
 
@@ -56,13 +61,33 @@ fun ArchiveScreen() {
                 Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Následující měsíc")
             }
         }
+        if (uiState.value.donutGraphExpense.isNotEmpty()) {
+            DonutGraph(
+                uiState.value.donutGraphExpense, modifier = Modifier
+                    .size(300.dp)
+                    .padding(16.dp)
+            )
+            uiState.value.donutGraphExpense.forEach { it ->
+                Row() {
+                    Column() {
+                        Text(it.category.toString())
+                    }
+                    Column() {
+                        Box(
+                            modifier = Modifier
+                                .size(16.dp)
+                                .background(
+                                    color = it.color,
+                                    shape = CircleShape
+                                )
+                        )
+                    }
+                }
 
-        // 2. Samostatný text pod tím (Suma výdajů)
-        Text(
-            text = "Celkové výdaje: ${uiState.value.donutGraphExpense}",
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.primary
-        )
+            }
+        }
+
+
     }
 
 
