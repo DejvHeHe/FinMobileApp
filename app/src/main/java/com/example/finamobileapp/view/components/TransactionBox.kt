@@ -2,8 +2,15 @@ package com.example.finamobileapp.view.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Card
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -21,7 +28,7 @@ fun TransactionBox(
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth(0.75f)
+            .fillMaxWidth(0.95f)
             .padding(10.dp)
             .combinedClickable(
                 onClick = onExpandClick,
