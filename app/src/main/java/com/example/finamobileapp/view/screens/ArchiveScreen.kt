@@ -24,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.finamobileapp.view.components.BarGraph
 import com.example.finamobileapp.view.components.DonutGraph
 import com.example.finamobileapp.view_model.ArchiveViewModel
 import com.example.finamobileapp.view_model.interfaces.ArchiveActions
@@ -61,7 +62,7 @@ fun ArchiveScreen() {
                 Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Následující měsíc")
             }
         }
-        Text(uiState.value.quartalList.toString())
+        BarGraph(uiState.value.quartalList, uiState.value.quartalNames)
         if (uiState.value.donutGraphExpense.isNotEmpty()) {
             DonutGraph(
                 uiState.value.donutGraphExpense, modifier = Modifier

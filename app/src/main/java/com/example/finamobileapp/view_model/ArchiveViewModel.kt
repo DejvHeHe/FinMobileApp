@@ -87,11 +87,13 @@ class ArchiveViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private fun loadQuartal() {
-        val selectedMonth = _uiState.value.selectedYearMonth.atDay(1)
+        val selectedMonth = _uiState.value.selectedYearMonth
         val afterMonth = selectedMonth.plusMonths(1)
         val beforeMonth = selectedMonth.minusMonths(1)
-        val quartalDatesList: List<LocalDate> = listOf(beforeMonth, selectedMonth, afterMonth)
-
+        val quartalDatesList: List<LocalDate> =
+            listOf(beforeMonth.atDay(1), selectedMonth.atDay(1), afterMonth.atDay(1))
+        val quartalNames: List<String> =
+            listOf(beforeMonth.toString(), selectedMonth.toString(), afterMonth.toString())
         viewModelScope.launch {
             val quartalList = mutableListOf<MonthlyStats>()
 
@@ -104,7 +106,7 @@ class ArchiveViewModel(application: Application) : AndroidViewModel(application)
                 quartalList.add(MonthlyStats(expenses = expenses, income = income))
             }
 
-            _uiState.update { it.copy(quartalList = quartalList) }
+            _uiState.update { it.copy(quartalList = quartalList, quartalNames = quartalNames) }
         }
 
 

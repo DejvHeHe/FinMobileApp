@@ -8,7 +8,8 @@ import java.time.YearMonth
 data class ArchiveUiState(
     val selectedYearMonth: YearMonth = YearMonth.now(),
     val donutGraphExpense: List<DonutSegment> = emptyList(),
-    val quartalList: List<MonthlyStats> = emptyList()
+    val quartalList: List<MonthlyStats> = emptyList(),
+    val quartalNames: List<String> = emptyList()
 
 )
 
