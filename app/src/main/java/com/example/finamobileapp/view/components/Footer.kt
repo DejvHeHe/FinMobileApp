@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,8 +35,9 @@ fun Footer(
     Column {
         HorizontalDivider(thickness = 2.dp, color = Color.Black)
         NavigationBar(
-            modifier = Modifier.height(70.dp),
-            containerColor = Color(0xFFA69D9D)
+            modifier = Modifier.height(80.dp),
+            containerColor = Color(0xFFA69D9D),
+            windowInsets = NavigationBarDefaults.windowInsets
         ) {
             // Dashboard
             FooterItem(
