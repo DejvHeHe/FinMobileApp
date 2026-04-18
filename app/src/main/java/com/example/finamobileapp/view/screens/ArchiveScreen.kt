@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -35,13 +37,13 @@ fun ArchiveScreen() {
     val archiveViewModel: ArchiveViewModel = viewModel()
     val uiState = archiveViewModel.uiState.collectAsStateWithLifecycle()
 
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()), // Tady je ten fix
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp) // Toto udělá odsazení mezi Row a Textem
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         // 1. Horní řada s výběrem měsíce
         Row(
@@ -85,12 +87,7 @@ fun ArchiveScreen() {
                         )
                     }
                 }
-
             }
         }
-
-
     }
-
-
 }
