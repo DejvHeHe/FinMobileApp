@@ -9,14 +9,17 @@ import com.example.finamobileapp.model.database.TransactionDatabase
 import com.example.finamobileapp.model.entities.enums.TransactionCategory
 import com.example.finamobileapp.model.entities.enums.TransactionType
 import com.example.finamobileapp.model.repository.TransactionRepository
-import com.example.finamobileapp.view_model.interfaces.DonutGraphActions
+import com.example.finamobileapp.view_model.interfaces.ArchiveActions
 import com.example.finamobileapp.view_model.uiState.ArchiveUiState
+import com.example.finamobileapp.view_model.uiState.MonthlyStats
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 class ArchiveViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -29,25 +32,27 @@ class ArchiveViewModel(application: Application) : AndroidViewModel(application)
         val transactionDao = TransactionDatabase.getDatabase(application).transactionDao()
         repository = TransactionRepository(transactionDao)
         loadExpenses()
+        loadQuartal()
 
     }
 
-    fun onDonutGraphActions(action: DonutGraphActions) {
+    fun onActions(action: ArchiveActions) {
         when (action) {
-            is DonutGraphActions.LoadExpenses -> loadExpenses()
-            is DonutGraphActions.YearMonthMinus -> yearMonthMinus()
-            is DonutGraphActions.YearMonthPlus -> yearMonthPlus()
+            is ArchiveActions.YearMonthMinus -> yearMonthMinus()
+            is ArchiveActions.YearMonthPlus -> yearMonthPlus()
         }
     }
 
     private fun yearMonthPlus() {
         _uiState.update { it.copy(selectedYearMonth = it.selectedYearMonth.plusMonths(1)) }
         loadExpenses()
+        loadQuartal()
     }
 
     private fun yearMonthMinus() {
         _uiState.update { it.copy(selectedYearMonth = it.selectedYearMonth.minusMonths(1)) }
         loadExpenses()
+        loadQuartal()
     }
 
     private var expensesJob: Job? = null
@@ -81,6 +86,30 @@ class ArchiveViewModel(application: Application) : AndroidViewModel(application)
 
     }
 
+    private fun loadQuartal() {
+        val selectedMonth = _uiState.value.selectedYearMonth.atDay(1)
+        val afterMonth = selectedMonth.plusMonths(1)
+        val beforeMonth = selectedMonth.minusMonths(1)
+        val quartalDatesList: List<LocalDate> = listOf(beforeMonth, selectedMonth, afterMonth)
+
+        viewModelScope.launch {
+            val quartalList = mutableListOf<MonthlyStats>()
+
+            quartalDatesList.forEach { date ->
+                val statsMap = repository.getSumyByType(date).first()
+
+                val expenses = statsMap[TransactionType.EXPENSE] ?: 0
+                val income = statsMap[TransactionType.INCOME] ?: 0
+
+                quartalList.add(MonthlyStats(expenses = expenses, income = income))
+            }
+
+            _uiState.update { it.copy(quartalList = quartalList) }
+        }
+
+
+    }
+
     private val colorLogic: TransactionCategory.() -> Color = {
         when (this) {
             TransactionCategory.SAVINGS -> Color(0xFF4CAF50)
@@ -95,6 +124,7 @@ class ArchiveViewModel(application: Application) : AndroidViewModel(application)
             TransactionCategory.HEALTH -> Color(0xFF00BCD4)
             TransactionCategory.GYM -> Color(0xFF3F51B5)
             TransactionCategory.OTHER -> Color(0xFF9E9E9E)
+            TransactionCategory.WITHDRAW -> Color(0xFF009688)
             else -> Color(0xFF000000)
         }
     }

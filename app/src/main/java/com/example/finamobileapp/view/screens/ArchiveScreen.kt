@@ -26,7 +26,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.finamobileapp.view.components.DonutGraph
 import com.example.finamobileapp.view_model.ArchiveViewModel
-import com.example.finamobileapp.view_model.interfaces.DonutGraphActions
+import com.example.finamobileapp.view_model.interfaces.ArchiveActions
 
 @Preview
 @Composable
@@ -47,7 +47,7 @@ fun ArchiveScreen() {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            IconButton(onClick = { archiveViewModel.onDonutGraphActions(DonutGraphActions.YearMonthMinus) }) {
+            IconButton(onClick = { archiveViewModel.onActions(ArchiveActions.YearMonthMinus) }) {
                 Icon(Icons.Default.KeyboardArrowLeft, contentDescription = "Předchozí měsíc")
             }
 
@@ -57,10 +57,11 @@ fun ArchiveScreen() {
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
 
-            IconButton(onClick = { archiveViewModel.onDonutGraphActions(DonutGraphActions.YearMonthPlus) }) {
+            IconButton(onClick = { archiveViewModel.onActions(ArchiveActions.YearMonthPlus) }) {
                 Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Následující měsíc")
             }
         }
+        Text(uiState.value.quartalList.toString())
         if (uiState.value.donutGraphExpense.isNotEmpty()) {
             DonutGraph(
                 uiState.value.donutGraphExpense, modifier = Modifier

@@ -16,6 +16,7 @@ enum class TransactionCategory(val type: TransactionType) {
     PRESENT(TransactionType.EXPENSE),
     HEALTH(TransactionType.EXPENSE),
     GYM(TransactionType.EXPENSE),
+    WITHDRAW(TransactionType.EXPENSE),
     OTHER(TransactionType.EXPENSE),
 
 

@@ -76,7 +76,7 @@ class TransactionRepository(private val transactionDao: TransactionDao) {
         type: TransactionType
     ): Flow<Map<TransactionCategory, Int>> {
         return filterByMonth(date).map { list ->
-            list.filter { it.type == type }
+            list.filter { it.type == type && it.category !== TransactionCategory.TRANSFER }
                 .groupBy { it.category }
                 .mapValues { it.value.sumOf { t -> t.amount } }
         }
